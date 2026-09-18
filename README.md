@@ -122,8 +122,7 @@ BidSense/
 │       ├── schemas/             # Pydantic schemas
 │       └── services/            # auth_service.py, ai_service.py
 │
-├── test/                        # PRD, implementation plan, prototype assets
-└── *.md                         # Architecture & design documents
+└── docs/                        # Architecture, requirements, and delivery plan
 ```
 
 ---
@@ -331,11 +330,11 @@ Defined in `client/src/App.jsx`.
 - **No automated test suite yet**, although pytest/pytest-asyncio are installed.
 - **Logout does not revoke tokens** — `POST /api/auth/logout` only returns a message; there is no refresh-token blacklist.
 - **Frontend API base URL default** (`http://localhost:5000/api`) does not match the backend default port; set `VITE_API_URL`.
-- The `test/` directory holds product/planning documents and prototype assets, not an automated test suite.
+
 
 ---
 
 ## Additional Documentation
 <a name="additional-documentation"></a>
 
-Design documents in the repository root describe the intended target architecture (some sections predate the current FastAPI implementation): `BIDSENSE_SYSTEM_DESIGN.md`, `High-LevelSystemArchitecture.md`, `Backend Architecture.md`, `Frontend Architecture.md`, `Database Schema Design.md`, `API Architecture & Standards.md`, `AI Agent Architecture.md`, `Security Architecture.md`, and others.
+`docs/` holds the architecture and requirements set, all written against this Python stack. Start with `docs/README.md` for the index, `docs/FunctionalRequirements.md` §2.19 for what is actually built today, and `docs/ImplementationPlan.md` for the order the remaining modules are delivered in.
