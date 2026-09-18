@@ -1,31 +1,48 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import VendorHeader from '../components/vendor/VendorHeader';
 import VendorMetrics from '../components/vendor/VendorMetrics';
 import VendorFilterBar from '../components/vendor/VendorFilterBar';
 import VendorTable from '../components/vendor/VendorTable';
+import vendorService from '../services/vendorService';
 import { useToast } from '../context/ToastContext';
 
 const VendorManagementPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
-    const { success } = useToast();
-    const hasShownToast = useRef(false);
+    const { success, error: showError } = useToast();
 
-    const vendors = [
-        { id: 1, name: 'CloudNet Solutions', industry: 'IT Infrastructure', contact: 'sarah@cloudnet.com', score: 92, status: 'Active', projects: 4 },
-        { id: 2, name: 'SecureGuard Cyber', industry: 'Security Services', contact: 'mike@secureguard.io', score: 88, status: 'Active', projects: 2 },
-        { id: 3, name: 'Global Logistics Partners', industry: 'Logistics', contact: 'ops@globallogistics.com', score: 76, status: 'Pending', projects: 1 },
-        { id: 4, name: 'Alpha Dev Studio', industry: 'Software Development', contact: 'dev@alphastudio.co', score: 95, status: 'Active', projects: 6 },
-        { id: 5, name: 'Office Supply Co.', industry: 'Facilities', contact: 'sales@officesupply.com', score: 82, status: 'Inactive', projects: 0 },
-        { id: 6, name: 'GreenEnergy Grid', industry: 'Utilities', contact: 'energy@greenenergy.com', score: 89, status: 'Active', projects: 3 },
-    ];
+    const [vendors, setVendors] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!hasShownToast.current) {
-            hasShownToast.current = true;
-            const activeCount = vendors.filter(v => v.status === 'Active').length;
-            success(`${activeCount} active vendors in your network.`);
-        }
+        const fetchVendors = async () => {
+            try {
+                const response = await vendorService.getAll({ page_size: 50 });
+                const mapped = response.data.map(v => ({
+                    id: v.id,
+                    name: v.name,
+                    industry: v.industry || 'Other',
+                    contact: v.email,
+                    contactName: v.contact_name,
+                    phone: v.phone,
+                    website: v.website,
+                    status: v.status ? v.status.charAt(0).toUpperCase() + v.status.slice(1) : 'Pending',
+                    projects: 0,
+                }));
+                setVendors(mapped);
+                const activeCount = mapped.filter(v => v.status === 'Active').length;
+                if (activeCount > 0) {
+                    success(`${activeCount} active vendor${activeCount === 1 ? '' : 's'} in your network.`);
+                }
+            } catch (err) {
+                console.error('Failed to fetch vendors:', err);
+                showError('Failed to load vendors. Is the backend running?');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchVendors();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const filteredVendors = vendors.filter(vendor => {
@@ -56,7 +73,13 @@ const VendorManagementPage = () => {
                 />
 
                 {/* Vendors Table */}
-                <VendorTable filteredVendors={filteredVendors} />
+                {loading ? (
+                    <div className="space-y-3">
+                        {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-14 bg-gray-50 dark:bg-gray-800/50 rounded-xl animate-pulse" />)}
+                    </div>
+                ) : (
+                    <VendorTable filteredVendors={filteredVendors} />
+                )}
             </div>
 
         </div>

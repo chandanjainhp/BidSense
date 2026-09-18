@@ -1,29 +1,50 @@
 import api from '../api/axios';
 
 const rfpService = {
-    getAll: async () => {
-        // return api.get('/rfps');
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({
-                    data: [
-                        { id: 1, title: 'Enterprise Cloud Migration', vendorCount: 12, status: 'Open', deadline: 'Oct 24, 2025' },
-                        { id: 2, title: 'Q4 Laptop Refresh', vendorCount: 5, status: 'Draft', deadline: 'Nov 01, 2025' },
-                        { id: 3, title: 'Cybersecurity Audit Service', vendorCount: 8, status: 'Closed', deadline: 'Sep 15, 2025' },
-                        { id: 4, title: 'Marketing Agency Retainer', vendorCount: 15, status: 'Open', deadline: 'Dec 10, 2025' },
-                    ]
-                });
-            }, 700);
-        });
+    getAll: async (params = {}) => {
+        const response = await api.get('/rfps/', { params });
+        return { data: response.data.items, total: response.data.total };
+    },
+
+    getById: async (rfpId) => {
+        const response = await api.get(`/rfps/${rfpId}`);
+        return response;
     },
 
     create: async (rfpData) => {
-        // return api.post('/rfps', rfpData);
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({ data: { id: Math.floor(Math.random() * 1000), ...rfpData } });
-            }, 1000);
+        return api.post('/rfps/', rfpData);
+    },
+
+    update: async (rfpId, rfpData) => {
+        return api.patch(`/rfps/${rfpId}`, rfpData);
+    },
+
+    updateDocument: async (rfpId, document) => {
+        return api.patch(`/rfps/${rfpId}/document`, { document });
+    },
+
+    publish: async (rfpId) => {
+        return api.post(`/rfps/${rfpId}/publish`);
+    },
+
+    send: async (rfpId, vendorIds, message) => {
+        return api.post(`/rfps/${rfpId}/send`, {
+            vendor_ids: vendorIds,
+            invitation_message: message || null,
         });
+    },
+
+    getAnalytics: async (rfpId) => {
+        return api.get(`/rfps/${rfpId}/analytics`);
+    },
+
+    getHistory: async (rfpId) => {
+        const response = await api.get(`/rfps/${rfpId}/history`);
+        return { data: response.data.events };
+    },
+
+    delete: async (rfpId) => {
+        return api.delete(`/rfps/${rfpId}`);
     }
 };
 

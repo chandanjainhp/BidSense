@@ -1,39 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import PageTransition from '../components/common/PageTransition';
 import SEO from '../components/common/SEO';
-import { useTheme } from '../context/ThemeContext';
+import rfpService from '../services/rfpService';
 
 const RfpAnalyticsPage = () => {
     const [searchParams] = useSearchParams();
-    const rfpId = searchParams.get('id') || 'RFP-123456';
+    const rfpId = searchParams.get('id');
     const navigate = useNavigate();
-    const { theme } = useTheme();
 
     const [timeRange, setTimeRange] = useState('7d');
+    const [analyticsData, setAnalyticsData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(rfpId ? null : 'No RFP selected. Pick an RFP from the list first.');
 
-    // Mock Data
-    const analyticsData = {
-        totalBids: 12,
-        avgBidAmount: '$75,400',
-        lowestBid: '$68,000',
-        highestBid: '$92,500',
-        vendorsInvited: 24,
-        vendorsViewed: 18,
-        vendorsBidding: 12,
-        bidSpread: [
-            { range: '$60k - $70k', count: 2, height: 'h-16' },
-            { range: '$70k - $80k', count: 6, height: 'h-32' },
-            { range: '$80k - $90k', count: 3, height: 'h-24' },
-            { range: '$90k+', count: 1, height: 'h-8' },
-        ],
-        timeline: [
-            { date: 'Jan 10', event: 'RFP Published', type: 'success' },
-            { date: 'Jan 12', event: 'Invitation Sent to 24 Vendors', type: 'info' },
-            { date: 'Jan 15', event: 'First Bid Received from Acme Corp', type: 'primary' },
-            { date: 'Jan 18', event: 'Clarification Request by TechSolutions', type: 'warning' },
-        ]
-    };
+    useEffect(() => {
+        if (!rfpId) {
+            return;
+        }
+        const fetchAnalytics = async () => {
+            try {
+                const response = await rfpService.getAnalytics(rfpId);
+                const a = response.data;
+                const fmt = (v) => (v != null ? `$${Number(v).toLocaleString()}` : '—');
+                setAnalyticsData({
+                    totalBids: a.submitted_count ?? 0,
+                    avgBidAmount: fmt(a.avg_bid_amount),
+                    lowestBid: fmt(a.lowest_bid_amount),
+                    highestBid: fmt(a.highest_bid_amount),
+                    vendorsInvited: a.total_invitations ?? 0,
+                    vendorsViewed: a.viewed_count ?? 0,
+                    vendorsBidding: a.started_count ?? 0,
+                    vendorsDeclined: a.declined_count ?? 0,
+                });
+            } catch (err) {
+                console.error('Failed to fetch analytics:', err);
+                setError('Failed to load analytics for this RFP.');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchAnalytics();
+    }, [rfpId]);
 
     return (
         <PageTransition>
@@ -72,58 +80,44 @@ const RfpAnalyticsPage = () => {
                 </div>
 
                 {/* KPI Cards */}
+                {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {[1, 2, 3, 4].map(i => <div key={i} className="h-28 bg-white dark:bg-gray-900 rounded-2xl animate-pulse" />)}
+                    </div>
+                ) : error || !analyticsData ? (
+                    <p className="text-red-500 text-sm">{error || 'No analytics available.'}</p>
+                ) : (<>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <KpiCard title="Total Bids" value={analyticsData.totalBids} trend="+2 today" icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" color="indigo" />
-                    <KpiCard title="Avg. Bid Amount" value={analyticsData.avgBidAmount} trend="-4.2% vs est" icon="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" color="emerald" />
+                    <KpiCard title="Total Bids" value={analyticsData.totalBids} trend={`${analyticsData.vendorsInvited} invited`} icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" color="indigo" />
+                    <KpiCard title="Avg. Bid Amount" value={analyticsData.avgBidAmount} trend="Across all bids" icon="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" color="emerald" />
                     <KpiCard title="Lowest Bid" value={analyticsData.lowestBid} trend="Best Offer" icon="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" color="blue" />
-                    <KpiCard title="Engagement" value="75%" trend="High Interest" icon="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" color="amber" />
+                    <KpiCard title="Highest Bid" value={analyticsData.highestBid} trend="Top range" icon="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" color="amber" />
                 </div>
 
                 <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Bid Distribution Chart */}
-                    <div className="lg:col-span-2 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Bid Distribution Spread</h3>
-                        <div className="flex items-end justify-between h-64 gap-4 px-4">
-                            {analyticsData.bidSpread.map((item, idx) => (
-                                <div key={idx} className="flex flex-col items-center w-full group relative">
-                                    <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-xs py-1 px-2 rounded mb-2">
-                                        {item.count} Bids
-                                    </div>
-                                    <div className={`w-full max-w-[80px] ${item.height} bg-gradient-to-t from-indigo-500 to-indigo-400 rounded-t-xl opacity-80 group-hover:opacity-100 transition-all hover:scale-105`}></div>
-                                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-3">{item.range}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
                     {/* Vendor Funnel */}
-                    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
+                    <div className="lg:col-span-2 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Vendor Funnel</h3>
                         <div className="space-y-6">
-                            <FunnelStage label="Invited" count={analyticsData.vendorsInvited} total={analyticsData.vendorsInvited} color="bg-gray-200 dark:bg-gray-700" />
-                            <FunnelStage label="Viewed RFP" count={analyticsData.vendorsViewed} total={analyticsData.vendorsInvited} color="bg-blue-200 dark:bg-blue-900" />
-                            <FunnelStage label="Started Draft" count={analyticsData.vendorsBidding} total={analyticsData.vendorsInvited} color="bg-indigo-300 dark:bg-indigo-800" />
-                            <FunnelStage label="Submitted Bid" count={analyticsData.totalBids} total={analyticsData.vendorsInvited} color="bg-emerald-400 dark:bg-emerald-600" />
+                            <FunnelStage label="Invited" count={analyticsData.vendorsInvited} total={analyticsData.vendorsInvited || 1} color="bg-gray-200 dark:bg-gray-700" />
+                            <FunnelStage label="Viewed RFP" count={analyticsData.vendorsViewed} total={analyticsData.vendorsInvited || 1} color="bg-blue-200 dark:bg-blue-900" />
+                            <FunnelStage label="Started Draft" count={analyticsData.vendorsBidding} total={analyticsData.vendorsInvited || 1} color="bg-indigo-300 dark:bg-indigo-800" />
+                            <FunnelStage label="Submitted Bid" count={analyticsData.totalBids} total={analyticsData.vendorsInvited || 1} color="bg-emerald-400 dark:bg-emerald-600" />
+                        </div>
+                    </div>
+
+                    {/* Summary Card */}
+                    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Bid Summary</h3>
+                        <div className="space-y-4">
+                            <SummaryRow label="Avg Bid" value={analyticsData.avgBidAmount} />
+                            <SummaryRow label="Lowest Bid" value={analyticsData.lowestBid} />
+                            <SummaryRow label="Highest Bid" value={analyticsData.highestBid} />
+                            <SummaryRow label="Declined" value={String(analyticsData.vendorsDeclined)} />
                         </div>
                     </div>
                 </div>
-
-                {/* Recent Activity Timeline */}
-                <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Timeline Events</h3>
-                    <div className="space-y-8 pl-4 border-l-2 border-gray-100 dark:border-gray-800">
-                        {analyticsData.timeline.map((event, idx) => (
-                            <div key={idx} className="relative pl-6">
-                                <div className={`absolute -left-[9px] top-1.5 w-4 h-4 rounded-full border-2 border-white dark:border-gray-900 ${event.type === 'success' ? 'bg-emerald-500' :
-                                    event.type === 'primary' ? 'bg-indigo-500' :
-                                        event.type === 'warning' ? 'bg-amber-500' : 'bg-gray-400'
-                                    }`}></div>
-                                <p className="text-xs font-bold text-gray-400 mb-1">{event.date}</p>
-                                <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{event.event}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                </>)}
             </div>
         </PageTransition>
     );
@@ -167,7 +161,7 @@ const KpiCard = ({ title, value, trend, icon, color }) => {
 };
 
 const FunnelStage = ({ label, count, total, color }) => {
-    const percentage = Math.round((count / total) * 100);
+    const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
     return (
         <div>
             <div className="flex justify-between text-sm mb-1">
@@ -180,5 +174,12 @@ const FunnelStage = ({ label, count, total, color }) => {
         </div>
     );
 };
+
+const SummaryRow = ({ label, value }) => (
+    <div className="flex justify-between items-center py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
+        <span className="text-sm text-gray-500 dark:text-gray-400">{label}</span>
+        <span className="text-sm font-bold text-gray-900 dark:text-white">{value}</span>
+    </div>
+);
 
 export default RfpAnalyticsPage;

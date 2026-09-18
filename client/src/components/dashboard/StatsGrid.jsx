@@ -14,6 +14,7 @@ const StatsGrid = () => {
                 const response = await dashboardService.getStats();
                 setStats(response.data);
             } catch (error) {
+                // Error handled silently; empty stats grid renders
                 console.error("Failed to fetch stats:", error);
             } finally {
                 setLoading(false);

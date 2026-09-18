@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import SignupHeader from '../components/auth/SignupHeader';
 import SEO from '../components/common/SEO';
 import SignupForm from '../components/auth/SignupForm';
@@ -10,20 +11,32 @@ import { useToast } from '../context/ToastContext';
 import logo from '../assets/logo-round.jpg';
 
 const Signup = () => {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submittedEmail, setSubmittedEmail] = useState('');
   const { success, error: showError } = useToast();
 
   const handleSignup = async (data) => {
     setIsLoading(true);
-    setSubmittedEmail(data.email);
     try {
-      await authService.register(data.fullName, data.email, data.password);
-      success('Request submitted successfully!');
-      setIsSubmitted(true);
+      const response = await authService.register({
+        fullName: data.fullName,
+        email: data.email,
+        password: data.password,
+      });
+      const debugOtp = response?.data?.debug_otp;
+      if (debugOtp) {
+        success(`Registration successful! Your verification code is: ${debugOtp}`);
+      } else {
+        success('Registration successful! Check your email for the verification code.');
+      }
+      navigate(`/otp-verification?email=${encodeURIComponent(data.email)}`);
     } catch (err) {
-      showError('Registration failed. Please try again.');
+      const detail = err?.response?.data?.detail;
+      showError(
+        typeof detail === 'string'
+          ? detail
+          : 'Registration failed. Please try again.'
+      );
       console.error("Signup failed:", err);
     } finally {
       setIsLoading(false);
@@ -82,7 +95,7 @@ const Signup = () => {
             {/* --- Header --- */}
             <SignupHeader />
 
-            {!isSubmitted ? (
+            {!isLoading ? (
               <SignupForm
                 onSubmit={handleSignup}
                 isLoading={isLoading}
@@ -91,20 +104,12 @@ const Signup = () => {
               /* --- Success View --- */
               <div className="text-center py-6 animate-fade-in">
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-500/10 rounded-full mb-6 border border-emerald-500/20">
-                  <svg className="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                  <svg className="w-8 h-8 text-emerald-500 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2">Request Submitted!</h3>
-                <p className="text-gray-400 mb-8">
-                  Thank you for your interest. Our team will review your application and send access credentials to <span className="font-semibold text-white">{submittedEmail}</span> within 24 hours.
-                </p>
-                <button
-                  onClick={() => setIsSubmitted(false)}
-                  className="text-sm font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
-                >
-                  Back to Signup
-                </button>
+                <h3 className="text-2xl font-bold text-white mb-2">Creating your account…</h3>
+                <p className="text-gray-400 mb-8">Redirecting you to email verification.</p>
               </div>
             )}
 

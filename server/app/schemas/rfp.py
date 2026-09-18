@@ -1,6 +1,7 @@
 from uuid import UUID
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 from datetime import datetime, date
+
 from decimal import Decimal
 from enum import Enum
 
@@ -40,17 +41,34 @@ class RfpDocumentUpdate(BaseModel):
     document: dict
 
 
-class RfpPublic(RfpBase):
+class RfpPublic(BaseModel):
     id: UUID
     created_by: UUID | None
+    title: str
+    type: str | None = None
+    department: str | None = None
+    budget: float | None = None
+    dueDate: date
+    description: str | None = None
     status: str
     vendorCount: int = 0
-    deadline: date
     created_at: datetime
     updated_at: datetime
     published_at: datetime | None = None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _map_orm_fields(cls, data):
+        """Map ORM attribute names (rfp_type/due_date) to API names (type/dueDate)."""
+        if hasattr(data, "rfp_type"):
+            if not hasattr(data, "type"):
+                data.type = data.rfp_type
+            if hasattr(data, "due_date") and not hasattr(data, "dueDate"):
+                due = data.due_date
+                data.dueDate = due.date() if isinstance(due, datetime) else due
+        return data
 
 
 class RfpListResponse(BaseModel):

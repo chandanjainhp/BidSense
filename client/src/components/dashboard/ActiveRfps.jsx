@@ -14,10 +14,12 @@ const ActiveRfps = () => {
         const fetchRFPs = async () => {
             try {
                 const response = await rfpService.getAll();
-                // Adapter
+                // Adapter: FastAPI returns { items, total }; service unwraps to { data, total }.
+                // Map vendorCount to vendors and dueDate to deadline for the UI.
                 const mappedData = response.data.map(rfp => ({
                     ...rfp,
-                    vendors: rfp.vendorCount // Map vendorCount to vendors
+                    vendors: rfp.vendorCount,
+                    deadline: rfp.deadline || rfp.dueDate,
                 }));
                 setActiveRFPs(mappedData);
             } catch (error) {

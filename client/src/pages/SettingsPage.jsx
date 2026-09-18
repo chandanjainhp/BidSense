@@ -1,22 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SettingsSidebar from '../components/settings/SettingsSidebar';
 import ProfileSettings from '../components/settings/ProfileSettings';
 import SecuritySettings from '../components/settings/SecuritySettings';
 import NotificationSettings from '../components/settings/NotificationSettings';
 import AiPreferences from '../components/settings/AiPreferences';
+import settingsService from '../services/settingsService';
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState('Profile');
   const [isAiAutoPilot, setIsAiAutoPilot] = useState(true);
 
-  // --- Static Form State ---
+  // --- Profile loaded from GET /api/users/me ---
   const [profile, setProfile] = useState({
-    fullName: 'Michael Ross',
-    email: 'michael.ross@enterprise.com',
-    role: 'Lead Procurement Manager',
-    timezone: '(GMT-08:00) Pacific Time',
-    avatar: '' // Placeholder for image URL
+    fullName: '',
+    email: '',
+    role: '',
+    timezone: '',
+    avatar: ''
   });
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await settingsService.getProfile();
+        setProfile({
+          fullName: response.data.full_name || '',
+          email: response.data.email || '',
+          role: response.data.is_verified ? 'Verified User' : 'Unverified User',
+          timezone: '',
+          avatar: response.data.avatar_url || ''
+        });
+      } catch (err) {
+        console.error('Failed to load profile:', err);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-black p-6 md:p-10 font-sans transition-colors duration-300">

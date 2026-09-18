@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
+import settingsService from '../../services/settingsService';
 import logo from '../../assets/logo-round.jpg';
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isCollapsed, setIsCollapsed }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { theme, toggleTheme } = useTheme();
+    const [user, setUser] = useState(null);
 
     const navItems = [
         { name: 'Dashboard', path: '/dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
@@ -22,6 +24,14 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isCollapsed, setIsCollapsed 
         if (path === '/rfps' && location.pathname.startsWith('/rfps/history')) return false;
         return location.pathname.startsWith(path);
     };
+
+    useEffect(() => {
+        let cancelled = false;
+        settingsService.getProfile()
+            .then((res) => { if (!cancelled) setUser(res.data); })
+            .catch(() => { /* not logged in or backend down; leave profile empty */ });
+        return () => { cancelled = true; };
+    }, []);
 
     return (
         <aside
@@ -113,8 +123,8 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isCollapsed, setIsCollapsed 
                         <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 border-2 border-white/10" />
                         {!isCollapsed && (
                             <div className="ml-3 overflow-hidden text-left animate-in fade-in duration-300">
-                                <p className="text-sm font-bold text-white truncate">Michael Ross</p>
-                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Lead Procurement</p>
+                                <p className="text-sm font-bold text-white truncate">{user?.full_name || 'My Account'}</p>
+                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{user?.is_verified ? 'Verified' : 'Member'}</p>
                             </div>
                         )}
                     </div>

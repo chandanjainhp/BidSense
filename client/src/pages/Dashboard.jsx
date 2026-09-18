@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import StatsGrid from '../components/dashboard/StatsGrid';
@@ -8,19 +8,9 @@ import ActivityFeed from '../components/dashboard/ActivityFeed';
 import DashboardFooter from '../components/dashboard/DashboardFooter';
 import SEO from '../components/common/SEO';
 import PageTransition from '../components/common/PageTransition';
-import { useToast } from '../context/ToastContext';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { info } = useToast();
-  const hasShownToast = useRef(false);
-
-  useEffect(() => {
-    if (!hasShownToast.current) {
-      hasShownToast.current = true;
-      info('Welcome back! You have 3 pending RFP reviews.');
-    }
-  }, []);
 
   return (
     <PageTransition className="min-h-screen bg-gray-50/50 dark:bg-black p-6 font-sans transition-colors duration-300">

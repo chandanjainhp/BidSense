@@ -51,7 +51,7 @@ const ActivityFeed = () => {
                         >
                             <div className={`p-2 rounded-lg flex-shrink-0 ${item.type === 'AI' ? 'bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400' : 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'}`}>
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon} />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon && item.icon.startsWith('M') ? item.icon : 'M13 10V3L4 14h7v7l9-11h-7z'} />
                                 </svg>
                             </div>
                             <div>

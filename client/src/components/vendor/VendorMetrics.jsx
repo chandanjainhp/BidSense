@@ -1,15 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import vendorService from '../../services/vendorService';
 
 const VendorMetrics = () => {
-    const stats = [
-        { label: "Total Vendors", value: "248", trend: "+12%", color: "indigo" },
-        { label: "Avg. Performance", value: "87/100", trend: "+3%", color: "emerald" },
-        { label: "Pending Approvals", value: "14", trend: "Needs Attn", color: "amber" }
-    ];
+    const [metrics, setMetrics] = useState(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        vendorService.getMetrics()
+            .then((res) => { if (!cancelled) setMetrics(res.data); })
+            .catch((err) => console.error('Failed to fetch vendor metrics:', err));
+        return () => { cancelled = true; };
+    }, []);
+
+    const stats = metrics ? [
+        { label: "Total Vendors", value: String(metrics.total), trend: `${metrics.active} active`, color: "indigo" },
+        { label: "Pending Approvals", value: String(metrics.pending), trend: metrics.pending > 0 ? "Needs Attn" : "All Clear", color: "amber" },
+        { label: "Inactive", value: String(metrics.inactive), trend: `${Object.keys(metrics.industry_breakdown || {}).length} industries`, color: "emerald" }
+    ] : [];
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            {stats.map((stat, idx) => (
+            {stats.length === 0 ? (
+                [1, 2, 3].map(i => (
+                    <div key={i} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 rounded-2xl shadow-sm animate-pulse h-28" />
+                ))
+            ) : stats.map((stat, idx) => (
                 <div key={idx} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                     <p className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide">{stat.label}</p>
                     <div className="flex items-baseline mt-2">

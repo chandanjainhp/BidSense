@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import BackToLoginLink from '../components/auth/BackToLoginLink';
 import PageTransition from '../components/common/PageTransition';
 import SEO from '../components/common/SEO';
+import authService from '../services/authService';
 import { useToast } from '../context/ToastContext';
 
 const ForgotPassword = () => {
@@ -31,17 +32,25 @@ const ForgotPassword = () => {
   }, [timer]);
 
   // Step 1: Send OTP to email
-  const handleSendOtp = (e) => {
+  const handleSendOtp = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const response = await authService.forgotPassword(email);
+      const debugOtp = response?.data?.debug_otp;
+      if (debugOtp) {
+        success(`OTP sent! Your reset code is: ${debugOtp}`);
+      } else {
+        success('If that email exists, a reset code is on its way.');
+      }
       setStep(2);
       setTimer(60);
-      success('OTP sent! Check your inbox.');
-    }, 1500);
+    } catch (err) {
+      showError('Failed to send reset code. Please try again.');
+      console.error('Forgot password failed:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // OTP input handlers
@@ -78,32 +87,37 @@ const ForgotPassword = () => {
     inputRefs.current[Math.min(pastedData.length, 5)]?.focus();
   };
 
-  // Step 2: Verify OTP
+  // Step 2: OTP is validated together with the new password in step 3
+  // (the backend's reset-password endpoint takes email + code + new_password atomically)
   const handleVerifyOtp = (e) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    // Simulate API verification
-    setTimeout(() => {
-      setIsLoading(false);
-      setStep(3);
-      success('OTP verified! Set your new password.');
-    }, 1500);
+    setStep(3);
+    success('Code captured! Now set your new password.');
   };
 
   // Resend OTP
-  const handleResendOtp = () => {
+  const handleResendOtp = async () => {
     setIsResending(true);
-    setTimeout(() => {
-      setIsResending(false);
+    try {
+      const response = await authService.forgotPassword(email);
+      const debugOtp = response?.data?.debug_otp;
       setTimer(60);
       setOtp(new Array(6).fill(''));
-      info('New OTP sent to your email.');
-    }, 1500);
+      if (debugOtp) {
+        info(`New reset code: ${debugOtp}`);
+      } else {
+        info('New OTP sent to your email.');
+      }
+    } catch (err) {
+      showError('Failed to resend code. Please try again.');
+      console.error('OTP resend failed:', err);
+    } finally {
+      setIsResending(false);
+    }
   };
 
   // Step 3: Reset Password
-  const handleResetPassword = (e) => {
+  const handleResetPassword = async (e) => {
     e.preventDefault();
 
     if (newPassword !== confirmPassword) {
@@ -117,13 +131,21 @@ const ForgotPassword = () => {
     }
 
     setIsLoading(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      success('Password reset successful!');
+    try {
+      await authService.resetPassword({
+        email,
+        code: otp.join(''),
+        newPassword,
+      });
+      success('Password reset successful! Please sign in.');
       navigate('/login');
-    }, 1500);
+    } catch (err) {
+      const detail = err?.response?.data?.detail;
+      showError(typeof detail === 'string' ? detail : 'Password reset failed. Please try again.');
+      console.error('Password reset failed:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isOtpComplete = !otp.some(v => v === '');

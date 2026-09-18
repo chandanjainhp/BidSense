@@ -18,7 +18,7 @@ const Login = () => {
   const handleLogin = async (data) => {
     setIsLoading(true);
     try {
-      const response = await authService.login(data.email, data.password);
+      await authService.login(data.email, data.password);
       success('Login successful! Redirecting...');
       setTimeout(() => navigate('/dashboard'), 500);
     } catch (err) {

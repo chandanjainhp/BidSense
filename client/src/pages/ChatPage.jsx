@@ -1,133 +1,158 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ChatSidebar from '../components/chat/ChatSidebar';
 import ChatHeader from '../components/chat/ChatHeader';
 import MessageList from '../components/chat/MessageList';
 import ChatInput from '../components/chat/ChatInput';
+import chatService from '../services/chatService';
+
+const WELCOME_MESSAGE = "Hello! I'm BidSense AI. I can help you draft RFPs, analyze vendor proposals, or identify risks. How can I assist you today?";
 
 const ChatPage = () => {
   // --- State Management ---
-  const [chats, setChats] = useState([
-    {
-      id: 1,
-      title: 'Cloud Infrastructure Migration',
-      time: '2m ago',
-      messages: [
-        { id: 1, role: 'ai', content: "Hello! I'm BidSense AI. How can I assist you with your procurement tasks today?", time: '10:00 AM' },
-        { id: 2, role: 'user', content: "Can you analyze the 'Cloud Infrastructure Migration' RFP?", time: '10:02 AM' },
-        { id: 3, role: 'ai', content: "I've reviewed the security section. It's missing specific clauses regarding 'Zero Trust Architecture'.", time: '10:02 AM' }
-      ]
-    },
-    {
-      id: 2,
-      title: 'Vendor Comparison – IT Services',
-      time: '1h ago',
-      messages: [
-        { id: 1, role: 'ai', content: "I've compared the top 3 vendors. TechFlow offers the best value.", time: '09:15 AM' }
-      ]
-    }
-  ]);
-
-  const [activeChatId, setActiveChatId] = useState(1);
+  const [chats, setChats] = useState([]);
+  const [activeChatId, setActiveChatId] = useState(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(true);
+  const [isSending, setIsSending] = useState(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
+
+  const fmtTime = (iso) => new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  // Load conversations from the backend on mount
+  useEffect(() => {
+    const loadChats = async () => {
+      try {
+        const response = await chatService.getConversations();
+        const mapped = response.data.map(c => ({
+          id: c.id,
+          title: c.title || 'New Conversation',
+          time: fmtTime(c.updated_at),
+          messages: [],
+        }));
+        setChats(mapped);
+        if (mapped.length > 0) {
+          setActiveChatId(mapped[0].id);
+        }
+      } catch (err) {
+        console.error('Failed to load conversations:', err);
+      } finally {
+        setInitialLoadDone(true);
+      }
+    };
+    loadChats();
+  }, []);
+
+  // Load messages whenever the active chat changes
+  useEffect(() => {
+    if (!activeChatId) return;
+    const loadMessages = async () => {
+      try {
+        const response = await chatService.getMessages(activeChatId);
+        const mapped = response.data.map(m => ({
+          id: m.id,
+          role: m.role === 'ai' ? 'ai' : 'user',
+          content: m.content,
+          time: fmtTime(m.created_at),
+        }));
+        setChats(prev => prev.map(c =>
+          c.id === activeChatId ? { ...c, messages: mapped } : c
+        ));
+      } catch (err) {
+        console.error('Failed to load messages:', err);
+      }
+    };
+    loadMessages();
+  }, [activeChatId]);
 
   // Derived state: Current active chat
   const activeChat = chats.find(c => c.id === activeChatId) || { messages: [] };
 
   // --- Actions ---
 
-  const handleNewChat = () => {
-    const newChatId = Date.now();
-    const newChat = {
-      id: newChatId,
-      title: 'New Conversation',
-      time: 'Just now',
-      messages: [
-        {
-          id: 1,
-          role: 'ai',
-          content: "Hello! I'm BidSense AI. I can help you draft RFPs, analyze vendor proposals, or identify risks. How can I assist you today?",
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-      ]
-    };
-
-    setChats([newChat, ...chats]);
-    setActiveChatId(newChatId);
-
-    // Auto-close sidebar on mobile when starting new chat
-    if (window.innerWidth < 768) {
-      setIsHistoryOpen(false);
-    }
-  };
-
-  const handleDeleteChat = (e, chatId) => {
-    e.stopPropagation(); // Prevent triggering selection
-    const updatedChats = chats.filter(c => c.id !== chatId);
-    setChats(updatedChats);
-
-    // If we deleted the active chat, switch to the first available one or create new
-    if (chatId === activeChatId) {
-      if (updatedChats.length > 0) {
-        setActiveChatId(updatedChats[0].id);
-      } else {
-        // No chats left, create a fresh one is a bit complex in render, so just set active to null or handle empty state
-        // For simplicity, let's just trigger new chat if empty
-        // handleNewChat() won't work directly here due to closure staleness if not careful, but setChats is state update.
-        // Let's simplified: If empty, we render empty state or trigger new chat effect. 
-        // We'll leave it empty for now and let the UI handle "No Chat Selected" or just auto-create in useEffect if needed.
-        setActiveChatId(null);
+  const handleNewChat = useCallback(async () => {
+    try {
+      const response = await chatService.createConversation('New Conversation');
+      const newChat = {
+        id: response.data.id,
+        title: response.data.title || 'New Conversation',
+        time: fmtTime(response.data.updated_at),
+        messages: [
+          { id: 'welcome', role: 'ai', content: WELCOME_MESSAGE, time: fmtTime(response.data.updated_at) }
+        ],
+      };
+      setChats(prev => [newChat, ...prev]);
+      setActiveChatId(newChat.id);
+      if (window.innerWidth < 768) {
+        setIsHistoryOpen(false);
       }
+    } catch (err) {
+      console.error('Failed to create conversation:', err);
+    }
+  }, []);
+
+  const handleDeleteChat = async (e, chatId) => {
+    e.stopPropagation(); // Prevent triggering selection
+    try {
+      await chatService.deleteConversation(chatId);
+      const updatedChats = chats.filter(c => c.id !== chatId);
+      setChats(updatedChats);
+      if (chatId === activeChatId) {
+        setActiveChatId(updatedChats.length > 0 ? updatedChats[0].id : null);
+      }
+    } catch (err) {
+      console.error('Failed to delete conversation:', err);
     }
   };
 
-  // If no active chat (e.g. all deleted), create one automatically
-  useEffect(() => {
-    if (chats.length === 0) {
-      handleNewChat();
-    }
-  }, [chats.length]);
+  const handleSendMessage = async (text) => {
+    if (!activeChatId || isSending) return;
+    setIsSending(true);
 
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const userMessage = { id: `local-${Date.now()}`, role: 'user', content: text, time: now };
 
-  const handleSendMessage = (text) => {
-    const newMessage = {
-      id: Date.now(),
-      role: 'user',
-      content: text,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-
-    // Update messages for the active chat
+    // Optimistically show the user's message; if it's the first, also title the chat
     setChats(prevChats => prevChats.map(chat => {
       if (chat.id === activeChatId) {
-        // If it's the first user message, update title
-        const isFirstUserMessage = chat.messages.length === 1 && chat.messages[0].role === 'ai';
+        const isFirstUserMessage = chat.messages.length === 0 ||
+          (chat.messages.length === 1 && chat.messages[0].role === 'ai' && chat.messages[0].id === 'welcome');
         const updatedTitle = isFirstUserMessage ? (text.slice(0, 30) + (text.length > 30 ? '...' : '')) : chat.title;
-
-        return {
-          ...chat,
-          title: updatedTitle,
-          messages: [...chat.messages, newMessage]
-        };
+        return { ...chat, title: updatedTitle, messages: [...chat.messages, userMessage] };
       }
       return chat;
     }));
 
-    // Simulate AI thinking and response
-    setTimeout(() => {
-      const aiResponse = {
-        id: Date.now() + 1,
+    try {
+      // Backend persists the user message, generates the AI reply, and returns it
+      const response = await chatService.sendMessage(activeChatId, text);
+      const aiMessage = {
+        id: response.data.id,
         role: 'ai',
-        content: "I've processed your request. This is a simulated response demonstrating the history persistence.",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        content: response.data.content,
+        time: fmtTime(response.data.created_at),
       };
-
       setChats(prevChats => prevChats.map(chat => {
         if (chat.id === activeChatId) {
-          return { ...chat, messages: [...chat.messages, aiResponse] };
+          return { ...chat, messages: [...chat.messages, aiMessage] };
         }
         return chat;
       }));
-    }, 1000);
+    } catch (err) {
+      console.error('Failed to send message:', err);
+      const errMessage = {
+        id: `err-${Date.now()}`,
+        role: 'ai',
+        content: 'Sorry, I could not process that. Please check your connection and try again.',
+        time: now,
+      };
+      setChats(prevChats => prevChats.map(chat => {
+        if (chat.id === activeChatId) {
+          return { ...chat, messages: [...chat.messages, errMessage] };
+        }
+        return chat;
+      }));
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleClearContext = () => {
@@ -137,18 +162,23 @@ const ChatPage = () => {
         return {
           ...chat,
           messages: [
-            {
-              id: Date.now(),
-              role: 'ai',
-              content: "Context cleared. How can I help you next?",
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }
+            { id: 'welcome', role: 'ai', content: "Context cleared. How can I help you next?", time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
           ]
         };
       }
       return chat;
     }));
   };
+
+  // If no chats exist after initial load, create one
+  useEffect(() => {
+    const ensureChat = async () => {
+      if (initialLoadDone && chats.length === 0) {
+        await handleNewChat();
+      }
+    };
+    ensureChat();
+  }, [initialLoadDone, chats.length, handleNewChat]);
 
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-white dark:bg-black font-sans overflow-hidden transition-colors duration-300">

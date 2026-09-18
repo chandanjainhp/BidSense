@@ -1,51 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import notificationService from '../services/notificationService';
 
 /**
  * NotificationCenter Component
  * Designed as a slide-over panel for the RFP Management Platform.
  */
 const NotificationCenter = ({ isOpen, onClose }) => {
-  // --- Mock Notifications ---
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: 'ai',
-      title: 'AI Scoring Complete',
-      message: 'BidSense has finished scoring 12 proposals for "Cloud Migration 2026".',
-      time: '2 mins ago',
-      isRead: false,
-    },
-    {
-      id: 2,
-      type: 'rfp',
-      title: 'RFP Deadline Approaching',
-      message: 'The submission window for "Security Software" closes in 24 hours.',
-      time: '1 hour ago',
-      isRead: false,
-    },
-    {
-      id: 3,
-      type: 'vendor',
-      title: 'New Proposal Submitted',
-      message: 'TechFlow Systems just submitted their proposal for "Cloud Migration 2026".',
-      time: '3 hours ago',
-      isRead: true,
-    },
-    {
-      id: 4,
-      type: 'system',
-      title: 'Access Request Approved',
-      message: 'Your request for "Admin Level" permissions has been processed.',
-      time: '5 hours ago',
-      isRead: true,
-    }
-  ]);
-
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('All');
 
-  const markAllRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+  const fetchNotifications = useCallback(async () => {
+    if (!isOpen) return;
+    setLoading(true);
+    try {
+      const response = await notificationService.getAll({ page_size: 50 });
+      setNotifications(response.data.map(n => ({
+        id: n.id,
+        type: n.notification_type,
+        title: n.title,
+        message: n.body,
+        time: new Date(n.created_at).toLocaleString(),
+        isRead: n.is_read,
+      })));
+    } catch (err) {
+      console.error('Failed to fetch notifications:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const run = async () => {
+      await fetchNotifications();
+    };
+    run();
+  }, [fetchNotifications]);
+
+  const markAllRead = async () => {
+    try {
+      await notificationService.markAllRead();
+      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+    } catch (err) {
+      console.error('Failed to mark all read:', err);
+    }
   };
 
   const filteredNotifications = notifications.filter(n => {
@@ -116,7 +115,11 @@ const NotificationCenter = ({ isOpen, onClose }) => {
 
             {/* Notification List */}
             <div className="flex-1 overflow-y-auto">
-              {filteredNotifications.length > 0 ? (
+              {loading ? (
+                <div className="p-6 space-y-4">
+                  {[1, 2, 3].map(i => <div key={i} className="h-16 bg-gray-50 dark:bg-gray-800/50 rounded-xl animate-pulse" />)}
+                </div>
+              ) : filteredNotifications.length > 0 ? (
                 <div className="divide-y divide-gray-50 dark:divide-gray-800/50">
                   {filteredNotifications.map((notif) => (
                     <motion.div
