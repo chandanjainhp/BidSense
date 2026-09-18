@@ -1,1232 +1,341 @@
-# RFP Management & BidSense Platform
+# BidSense — AI-Powered RFP Management Platform
 
-A modern full-stack AI-powered Request for Proposal (RFP) management system with intelligent proposal comparison and scoring. Streamline procurement workflows with automated RFP creation, vendor management, proposal analysis, and data-driven decision making using BidSense technology.
+BidSense is a full-stack Request for Proposal (RFP) platform: create and publish RFPs, invite vendors, collect proposals, and score/compare them with an LLM.
 
-![Node.js](https://img.shields.io/badge/Node.js-v18+-green)
-![React](https://img.shields.io/badge/React-19.2+-blue)
-![Express.js](https://img.shields.io/badge/Express.js-4.22+-yellow)
-![MongoDB](https://img.shields.io/badge/MongoDB-7.8+-green)
-![Gemini AI](https://img.shields.io/badge/AI-Gemini%202.0-orange)
-![Vite](https://img.shields.io/badge/Build-Vite-645DFF)
-![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38B2AC)
-
----
-
-## 📋 Table of Contents
-
-1. [Overview](#overview)
-2. [Key Features](#key-features)
-3. [Project Architecture](#project-architecture)
-4. [Tech Stack](#tech-stack)
-5. [Project Setup](#project-setup)
-6. [API Documentation](#api-documentation)
-7. [Project Structure](#project-structure)
-8. [Configuration](#configuration)
-9. [Key Workflows](#key-workflows)
-10. [Error Handling](#error-handling)
-11. [Security Features](#security-features)
+![React](https://img.shields.io/badge/React-19-blue)
+![Vite](https://img.shields.io/badge/Build-rolldown--vite-645DFF)
+![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS%204-38B2AC)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-asyncpg-336791)
+![Python](https://img.shields.io/badge/Python-3.11+-green)
 
 ---
 
-## 🎯 Overview
-<a name="overview"></a>
+## Table of Contents
 
-The RFP Management & BidSense Platform is designed to revolutionize procurement workflows. It enables organizations to:
-
-- **Create & Manage RFPs**: Build comprehensive RFPs with structured line items, specifications, delivery terms, and budget constraints
-- **Vendor Management**: Maintain vendor databases, track performance, and manage vendor communications
-- **Intelligent Proposal Analysis**: Automatically parse vendor proposals using Google Gemini AI
-- **Smart Comparison**: Compare multiple proposals using AI-powered scoring across price, delivery, warranty, and completeness dimensions
-- **Real-time Collaboration**: Chat interface for internal discussions and decision-making
-- **Admin Dashboard**: Monitor user activity, manage system settings, and access analytics
-
----
-
-## ✨ Key Features
-
-### User Management & Authentication
-- **Email-based Sign-up & Login** with OTP verification
-- **Role-based Access Control** (User and Admin roles)
-- **Secure JWT Token** management with refresh tokens
-- **User Profile Management** with company information
-
-### RFP Management
-- **Draft & Send RFPs** with detailed specifications
-- **Email Integration** - Vendors receive RFPs via email with unique reply tokens
-- **RFP Tracking** - Monitor RFP status (draft, sent, active, pending_responses, closed)
-- **History & Archives** - Access past RFPs and responses
-
-### Vendor Management
-- **Vendor Database** - Add and manage vendor information
-- **Vendor Selection** - Choose vendors for each RFP
-- **Vendor Search & Filtering** - Quickly find vendors by name or company
-- **Bulk Vendor Operations** - Manage multiple vendors at once
-
-### BidSense - Intelligent Proposal Comparison
-- **Automated Proposal Parsing** - AI extracts structured data from vendor responses
-- **Multi-dimensional Scoring**:
-  - **Price**: Cost competitiveness (0-100 points)
-  - **Delivery**: Timeline feasibility (0-100 points)
-  - **Warranty**: Coverage adequacy (0-100 points)
-  - **Completeness**: Response quality (0-100 points)
-- **Configurable Weights**: Adjust scoring weights based on business priorities
-- **Visual Comparison Charts**: Recharts-powered visualization for easy decision-making
-- **Score History**: Track scoring changes over time
-
-### Email Communication
-- **Inbound Email Handling** - Automatically receive and parse vendor responses
-- **Email Templates** - Professional RFP templates with auto-filled details
-- **Gmail Integration** - Send RFPs directly from Gmail accounts
-- **Email Logging** - Complete audit trail of all communications
-
-### Collaboration & Chat
-- **Internal Chat** - Team discussions about RFPs and proposals
-- **Proposal Discussion** - Comment and discuss specific proposals
-- **Real-time Updates** - Live notifications for new messages and responses
-
-### Admin Features
-- **User Management** - View and manage all platform users
-- **System Settings** - Configure scoring weights, email templates, and system parameters
-- **Activity Monitoring** - Track user actions and API usage
-- **Rate Limiting** - Built-in DDoS protection
+1. [Architecture](#architecture)
+2. [Tech Stack](#tech-stack)
+3. [Repository Layout](#repository-layout)
+4. [Setup](#setup)
+5. [Configuration](#configuration)
+6. [API Reference](#api-reference)
+7. [Data Model](#data-model)
+8. [Frontend Routes](#frontend-routes)
+9. [Current Limitations](#current-limitations)
+10. [Additional Documentation](#additional-documentation)
 
 ---
 
-## 🏗️ Project Architecture
-<a name="project-architecture"></a>
-
-### Architecture Overview
+## Architecture
+<a name="architecture"></a>
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Frontend (React + Vite)                      │
-│  ├─ Pages (Dashboard, RFP Editor, Proposal Comparison, Chat)   │
-│  ├─ Components (Reusable UI components with Tailwind CSS)       │
-│  ├─ State Management (Zustand stores)                           │
-│  └─ API Client (Axios with custom configuration)                │
-└──────────────────────┬──────────────────────────────────────────┘
-                       │
-                       │ HTTP/REST
-                       │
-┌──────────────────────▼──────────────────────────────────────────┐
-│                Backend (Node.js + Express)                       │
-│  ├─ Routes (Auth, RFP, Vendor, Comparison, Email Inbound)       │
-│  ├─ Controllers (Business logic layer)                          │
-│  ├─ Models (MongoDB schemas)                                     │
-│  ├─ Middlewares (Auth, Validation, Error Handling)              │
-│  ├─ Adapters (Email, AI Scoring, Storage)                       │
-│  └─ Utilities (Logger, Token Manager, Error Handler)            │
-└──────────────────────┬──────────────────────────────────────────┘
-                       │
-        ┌──────────────┼──────────────┐
-        │              │              │
-    MongoDB        Google         Nodemailer
-     (Data)     Gemini AI        (Email)
-                (Scoring)
+┌─────────────────────────────────────────────────────────┐
+│  client/  — React 19 + Vite + Tailwind CSS 4            │
+│  react-router-dom · react-hook-form + zod · axios       │
+│  framer-motion · React Context (theme, toasts)          │
+└──────────────────────────┬──────────────────────────────┘
+                           │ HTTP/JSON, Bearer JWT
+┌──────────────────────────▼──────────────────────────────┐
+│  server/  — FastAPI (app/main.py)                       │
+│  app/api/v1/*   routers mounted under /api              │
+│  app/services/  auth_service, ai_service                │
+│  app/models/    SQLAlchemy 2.0 async ORM models         │
+│  app/schemas/   Pydantic v2 request/response schemas    │
+│  app/core/      config, security (JWT/bcrypt), deps     │
+└───────┬──────────────────┬──────────────────┬───────────┘
+        │                  │                  │
+   PostgreSQL           Redis            OpenAI-compatible
+   (asyncpg)      (OTP rate limiting)     LLM API (httpx)
 ```
 
-### Data Flow
+Key flows:
 
-1. **RFP Creation**: User creates RFP → Stored in MongoDB → Email sent to vendors
-2. **Proposal Reception**: Vendor email → Parsed by Nodemailer → Stored in database
-3. **AI Analysis**: Proposal text → Sent to Gemini AI → Scoring algorithm → Results stored
-4. **Comparison**: Multiple proposals → Weighted scoring → Visual comparison displayed
-5. **Collaboration**: Users discuss via chat → Messages stored → Real-time updates
+1. **Auth** — register → OTP (hashed in the `otp_codes` table, resend rate-limited in Redis) → verify → JWT access + refresh tokens.
+2. **RFP lifecycle** — create draft → edit `document` (JSONB) → publish → send to vendors (creates `RfpInvitation` rows with unique tokens) → events recorded in `RfpEvent`.
+3. **Vendor submission** — vendors use the public `/api/invitations/{token}` endpoints (no auth) to view an RFP and submit a proposal.
+4. **AI scoring** — `POST /api/proposals/{id}/score` calls `AIService.score_proposal`, which uses an OpenAI-compatible chat API and falls back to deterministic offline scoring when `AI_API_KEY` is unset.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 <a name="tech-stack"></a>
 
-### Frontend Stack
-| Technology | Purpose |
-|-----------|---------|
-| **React 19.2** | UI library with modern hooks |
-| **Vite 7.2** | Lightning-fast build tool (Rolldown-based) |
-| **React Router 7.11** | Client-side routing |
-| **Zustand 5.0** | Lightweight state management |
-| **Tailwind CSS 4.1** | Utility-first CSS framework |
-| **PostCSS 8.5** | CSS processing and Tailwind support |
-| **Axios 1.13** | HTTP client for API calls |
-| **Recharts 3.6** | React charting library for comparisons |
-| **Lucide React 0.555** | Modern icon library |
+### Frontend (`client/package.json`)
 
-### Backend Stack
-| Technology | Purpose |
-|-----------|---------|
-| **Node.js 18+** | JavaScript runtime |
-| **Express.js 4.22** | Web framework |
-| **MongoDB 7.8** | NoSQL database |
-| **Mongoose 7.8** | MongoDB ODM |
-| **Google Generative AI 0.24** | Gemini AI API integration |
-| **Nodemailer 7.0** | Email sending service |
-| **JWT (jsonwebtoken 9.0)** | Token-based authentication |
-| **bcryptjs 3.0** | Password hashing |
-| **Express Validator 7.3** | Request validation |
-| **Joi 18.0** | Schema validation |
-| **Helmet 4.x** | Security headers |
-| **CORS 2.8** | Cross-origin handling |
-| **Winston 3.19** | Logging framework |
-| **BullMQ 4.18** | Job queue (background processing) |
+| Package | Version | Purpose |
+|---|---|---|
+| react / react-dom | ^19.2 | UI |
+| vite (`npm:rolldown-vite`) | 7.2.5 | Dev server & build |
+| react-router-dom | ^7.18 | Routing |
+| tailwindcss + @tailwindcss/vite | ^4.3 | Styling |
+| axios | ^1.18 | HTTP client |
+| react-hook-form + zod + @hookform/resolvers | — | Forms & validation |
+| framer-motion | ^12 | Animations |
+| react-helmet-async | ^2 | Document head |
+| eslint | ^9 | Linting |
+
+### Backend (`server/requirements.txt`)
+
+| Package | Version | Purpose |
+|---|---|---|
+| fastapi | 0.115.6 | Web framework |
+| uvicorn[standard] | 0.34.0 | ASGI server |
+| sqlalchemy[asyncio] | 2.0.36 | Async ORM |
+| asyncpg | 0.30.0 | PostgreSQL driver |
+| alembic | 1.14.0 | Migrations (declared; no migration scripts yet) |
+| pydantic / pydantic-settings | 2.10.4 / 2.7.0 | Schemas & settings |
+| python-jose[cryptography] | 3.3.0 | JWT |
+| bcrypt (via passlib[bcrypt]) | 1.7.4 | Password hashing |
+| redis | 5.2.1 | OTP rate limiting |
+| httpx | 0.28.1 | LLM API calls |
+| aiosmtplib | 3.0.2 | Email (declared; sending not wired up yet) |
+| pytest / pytest-asyncio | 8.3.4 / 0.24.0 | Tests |
 
 ---
 
-## 🚀 Project Setup
-<a name="project-setup"></a>
+## Repository Layout
+<a name="repository-layout"></a>
+
+```
+BidSense/
+├── client/                      # React frontend
+│   └── src/
+│       ├── api/axios.js         # Axios instance + Bearer token interceptor
+│       ├── services/            # authService, rfpService, dashboardService
+│       ├── pages/               # Route-level pages
+│       ├── components/          # auth, chat, dashboard, rfp, vendor, ... groups
+│       ├── context/             # ThemeContext, ToastContext
+│       ├── schemas/             # zod form schemas
+│       └── App.jsx              # Route table
+│
+├── server/                      # FastAPI backend
+│   ├── requirements.txt
+│   └── app/
+│       ├── main.py              # App factory, CORS, /health, /api/docs
+│       ├── api/v1/              # auth, users, vendors, rfps, proposals,
+│       │                        # chat, notifications, dashboard, settings,
+│       │                        # invitations, router.py
+│       ├── core/                # config.py, security.py, dependencies.py, exceptions.py
+│       ├── db/                  # base.py (engine/session/Base), init_db.py (create + seed)
+│       ├── models/              # SQLAlchemy models
+│       ├── schemas/             # Pydantic schemas
+│       └── services/            # auth_service.py, ai_service.py
+│
+├── test/                        # PRD, implementation plan, prototype assets
+└── *.md                         # Architecture & design documents
+```
+
+---
+
+## Setup
+<a name="setup"></a>
 
 ### Prerequisites
 
-- **Node.js**: v18.0.0 or higher
-- **npm**: v9.0.0 or higher
-- **MongoDB**: v7.8+ (local or MongoDB Atlas)
-- **Git**: v2.0+
-- **API Keys Required**:
-  - Google Gemini API Key (for AI proposal analysis)
-  - Gmail App Password (optional, for email functionality)
+- Python 3.11+
+- Node.js 18+ and npm
+- PostgreSQL 14+
+- Redis (used for OTP flows)
+- Optional: an OpenAI-compatible API key for live AI features
 
-### Installation Steps
+### 1. Backend
 
-#### 1. Clone Repository & Install Dependencies
-
-```bash
-# Clone the repository
-git clone <repository-url>
-cd RequestsforProposal
-
-# Install backend dependencies
-cd server
-npm install
-
-# Install frontend dependencies  
-cd ../client
-npm install
-```
-
-#### 2. Backend Configuration
-
-Create a `.env` file in the `server/` directory with the following variables:
-
-```env
-# === Database Configuration ===
-MONGODB_URI=mongodb://localhost:27017/rfp_prototype
-# For MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net/rfp_prototype
-
-# === Server Configuration ===
-PORT=3000
-NODE_ENV=development
-LOG_LEVEL=debug
-
-# === JWT Configuration ===
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
-JWT_EXPIRE=7d
-REFRESH_TOKEN_EXPIRE=30d
-
-# === CORS Configuration ===
-CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
-
-# === AI/LLM Configuration (Google Gemini) ===
-GEMINI_API_KEY=your-google-gemini-api-key
-GEMINI_ENDPOINT=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
-GEMINI_MODEL=gemini-2.0-flash
-
-# === Email Service Configuration (Gmail) ===
-EMAIL_SERVICE=gmail
-SENDER_EMAIL=your-email@gmail.com
-GMAIL_USER=your-email@gmail.com
-GMAIL_APP_PASSWORD=your-16-char-gmail-app-password
-EMAIL_INBOUND_SECRET=your-webhook-secret-key
-
-# === Proposal Scoring Weights (must sum to 1.0) ===
-SCORE_WEIGHTS_PRICE=0.5
-SCORE_WEIGHTS_DELIVERY=0.2
-SCORE_WEIGHTS_WARRANTY=0.1
-SCORE_WEIGHTS_COMPLETENESS=0.2
-
-# === File Upload Configuration ===
-UPLOAD_DIR=./uploads
-MAX_FILE_SIZE=10485760  # 10MB
-
-# === Redis Configuration (optional, for job queues) ===
-REDIS_URL=redis://127.0.0.1:6379
-
-# === Email Webhook Configuration ===
-WEBHOOK_URL=https://your-domain.com/api/email/inbound
-```
-
-#### 3. Frontend Configuration
-
-Create a `.env` file in the `client/` directory:
-
-```env
-VITE_API_URL=http://localhost:3000
-```
-
-#### 4. Get API Keys
-
-##### Google Gemini API Key
-1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
-2. Click "Create API Key"
-3. Copy the key to your `.env` file
-
-##### Gmail App Password (for Email Sending)
-1. Enable 2-Factor Authentication on your Gmail account
-2. Go to [Google App Passwords](https://myaccount.google.com/apppasswords)
-3. Select "Mail" and "Windows Computer" (or your device)
-4. Google generates a 16-character password
-5. Copy this password to `GMAIL_APP_PASSWORD` in `.env`
-
-#### 5. Setup MongoDB
-
-**Option A: Local MongoDB**
-```bash
-# On Windows, start MongoDB service
-mongod
-
-# Or if installed via Homebrew (macOS):
-brew services start mongodb-community
-```
-
-**Option B: MongoDB Atlas (Cloud)**
-1. Create account at [mongodb.com/cloud/atlas](https://mongodb.com/cloud/atlas)
-2. Create a free cluster
-3. Get connection string: `mongodb+srv://user:pass@cluster.mongodb.net/rfp_prototype`
-4. Use this as `MONGODB_URI` in `.env`
-
-#### 6. Run the Application
-
-**Terminal 1 - Backend Server**
 ```bash
 cd server
-npm run dev
-# Server starts at http://localhost:3000
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-**Terminal 2 - Frontend Development Server**
+Create `server/.env` (see [Configuration](#configuration)); `DATABASE_URL` is the only required variable.
+
+Create the tables and seed demo data:
+
+```bash
+python -m app.db.init_db
+```
+
+This seeds a verified demo user (`demo@bidsense.io` / `Demo@1234`), five vendors, four RFPs, proposals and activity rows.
+
+Run the API:
+
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+
+- API root: `http://localhost:8000/api`
+- Swagger UI: `http://localhost:8000/api/docs`
+- Health check: `http://localhost:8000/health`
+
+### 2. Frontend
+
 ```bash
 cd client
-npm run dev
-# Frontend starts at http://localhost:5173
+npm install
+npm run dev        # http://localhost:5173
 ```
 
-**Access the Application**
-- Open browser to [http://localhost:5173](http://localhost:5173)
-- Sign up with an email address
-- Verify OTP (check terminal or logs for test mode)
-- Start creating RFPs!
+Create `client/.env`:
+
+```env
+VITE_API_URL=http://localhost:8000/api
+```
+
+Set this explicitly — `client/src/api/axios.js` falls back to `http://localhost:5000/api`, which does not match the backend's default port.
+
+Other client scripts: `npm run build`, `npm run preview`, `npm run lint`.
 
 ---
 
-## 📁 Project Structure
-<a name="project-structure"></a>
-
-### Frontend Structure (`client/src/`)
-
-```
-src/
-├── pages/                          # Route components
-│   ├── HomePage.jsx                # Public landing page
-│   ├── DashboardPage.jsx           # Main dashboard
-│   ├── RfpEditorPage.jsx           # RFP creation & editing
-│   ├── SendRfpPage.jsx             # Send RFP to vendors
-│   ├── HistoryPage.jsx             # RFP history & archives
-│   ├── VendorPage.jsx              # Vendor management
-│   ├── ComparePage.jsx             # Proposal comparison
-│   ├── ChatPage.jsx                # Team chat
-│   ├── ProposalInboxPage.jsx       # Incoming proposals
-│   ├── SettingsPage.jsx            # User settings
-│   ├── AdminUsersPage.jsx          # Admin: manage users
-│   ├── AdminSettingsPage.jsx       # Admin: system settings
-│   ├── LoginPage.jsx               # Authentication
-│   ├── SignupPage.jsx              # Registration
-│   ├── VerifyOTPPage.jsx           # OTP verification
-│   └── Error*.jsx                  # Error pages (403, 404, 500)
-│
-├── components/                     # Reusable components
-│   ├── Header.jsx                  # Navigation header
-│   ├── Sidebar.jsx                 # Side navigation
-│   ├── Button.jsx                  # Custom button
-│   ├── BidSenseStepper.jsx         # RFP wizard
-│   ├── BidSensePreviewExpanded.jsx # Proposal preview
-│   ├── ScoreChart.jsx              # Scoring visualization
-│   ├── ProposalCard.jsx            # Proposal display
-│   ├── VendorSelector.jsx          # Vendor picker
-│   ├── ChatBubble.jsx              # Chat messages
-│   ├── ChatInput.jsx               # Chat input
-│   ├── ConfirmDialog.jsx           # Confirmation modal
-│   ├── Toast.jsx                   # Notifications
-│   ├── ToastContainer.jsx          # Toast container
-│   ├── ErrorBoundary.jsx           # Error catching
-│   ├── NetworkStatus.jsx           # Connection indicator
-│   ├── SaveStatusIndicator.jsx     # Save status
-│   └── ...other components
-│
-├── layout/                         # Layout wrappers
-│   ├── MainLayout.jsx              # Main app layout
-│   ├── PublicLayout.jsx            # Public pages layout
-│   ├── ProtectedLayout.jsx         # Protected routes layout
-│   ├── AuthLayout.jsx              # Auth pages layout
-│   └── Header.jsx, Sidebar.jsx     # Common layout components
-│
-├── api/                            # API client
-│   ├── apiClient.js                # Axios instance
-│   ├── axiosConfig.js              # Axios configuration
-│   ├── authAPI.js                  # Auth endpoints
-│   ├── bidsense.js                 # BidSense endpoints
-│   ├── compare.js                  # Comparison endpoints
-│   ├── vendors.js                  # Vendor endpoints
-│   └── ...other API modules
-│
-├── store/                          # Zustand state management
-│   ├── authStore.js                # Auth state
-│   ├── bidsenseStore.js            # RFP/BidSense state
-│   ├── notificationStore.js        # Toast/notification state
-│   └── syncStore.js                # Sync state
-│
-├── hooks/                          # Custom React hooks
-│   ├── useAuth.js                  # Authentication hook
-│   └── useApi.js                   # API call hook
-│
-├── routes/                         # Routing
-│   └── routeConfig.jsx             # Route definitions
-│
-├── constants/                      # Application constants
-│   └── routes.js                   # Route paths
-│
-├── styles/                         # Global styles
-│   ├── brand.css                   # Brand colors & theming
-│   ├── App.css                     # App styles
-│   └── index.css                   # Global styles
-│
-└── utils/                          # Utility functions
-    ├── errorHandler.js             # Error handling
-    ├── tokenStorage.js             # Token management
-    └── ...other utilities
-```
-
-### Backend Structure (`server/src/`)
-
-```
-src/
-├── app.js                          # Express app setup
-├── config.js                       # Configuration
-├── constants.js                    # Constants
-├── firsttypeindex.js               # Type definitions
-│
-├── controllers/                    # Business logic
-│   ├── auth.Controller.js          # Auth endpoints
-│   ├── rfp.controller.js           # Single RFP operations
-│   ├── rfps.controller.js          # Multiple RFP operations
-│   ├── bidsense.Controller.js      # BidSense logic
-│   ├── comparison.controller.js    # Proposal comparison
-│   ├── vendor.controller.js        # Vendor management
-│   ├── user.Controller.js          # User management
-│   ├── email.controller.js         # Email operations
-│   └── health.controller.js        # Health check
-│
-├── models/                         # MongoDB schemas
-│   ├── User.js                     # User schema
-│   ├── Rfp.js                      # RFP schema
-│   ├── Proposal.js                 # Proposal schema
-│   ├── Vendor.js                   # Vendor schema
-│   ├── ComparisonScore.js          # Scoring schema
-│   ├── OTP.js                      # OTP schema
-│   ├── EmailLog.js                 # Email tracking
-│   └── Attachment.js               # File attachments
-│
-├── routes/                         # API routes
-│   ├── authRoutes.js               # /api/auth
-│   ├── rfp.router.js               # /api/rfp (single)
-│   ├── rfps.router.js              # /api/rfps (multiple)
-│   ├── bidsenseRoutes.js           # /api/bidsense
-│   ├── comparison.router.js        # /api/compare
-│   ├── vendor.router.js            # /api/vendors
-│   ├── emailInbound.js             # /api/email/inbound
-│   └── health.router.js            # /api/health
-│
-├── middlewares/                    # Express middlewares
-│   ├── auth.middle.js              # JWT authentication
-│   ├── authMiddleware.js           # Auth checking
-│   ├── errorHandler.js             # Error handling
-│   ├── multer.middleware.js        # File upload
-│   ├── validate.js                 # Request validation
-│   └── validateRequest.js          # Request validation
-│
-├── adapters/                       # External service adapters
-│   ├── aiScorer.js                 # AI scoring interface
-│   ├── geminiScorer.js             # Google Gemini implementation
-│   ├── emailAdapter.js             # Email service interface
-│   ├── llmAdapter.js               # LLM interface
-│   └── storageAdapter.js           # File storage interface
-│
-├── db/                             # Database
-│   └── index.js                    # MongoDB connection
-│
-├── email/                          # Email utilities
-│   ├── email.config.js             # Email configuration
-│   ├── emails.js                   # Email sending logic
-│   ├── emailTemplates.js           # Email templates
-│   └── test-email.js               # Email testing
-│
-├── errors/                         # Error classes
-│   ├── AppError.js                 # Base error
-│   ├── ValidationError.js          # Validation errors
-│   ├── AuthenticationError.js      # Auth errors
-│   ├── AuthorizationError.js       # Authorization errors
-│   ├── NotFoundError.js            # 404 errors
-│   ├── ConflictError.js            # Conflict errors
-│   ├── RateLimitError.js           # Rate limit errors
-│   ├── InternalServerError.js      # 500 errors
-│   ├── errorCodes.js               # Error code constants
-│   └── index.js                    # Error exports
-│
-├── validation/                     # Request validation
-│   ├── schemas.js                  # Joi schemas
-│   ├── customRules.js              # Custom validation rules
-│   └── index.js                    # Validation exports
-│
-├── utils/                          # Utility functions
-│   ├── logger.js                   # Winston logger
-│   ├── tokenUtils.js               # JWT utilities
-│   ├── ApiResponse.js              # API response formatting
-│   ├── ApiError.js                 # API error handling
-│   ├── asyncHandler.js             # Async error wrapper
-│   ├── validator.js                # Validation utilities
-│   ├── passwordValidator.js        # Password validation
-│   ├── otpGenerator.js             # OTP generation
-│   ├── emailTemplates.js           # Email template helpers
-│   ├── fileValidation.js           # File validation
-│   ├── sanitizers.js               # Input sanitization
-│   └── ...other utilities
-│
-└── queues/                         # Background job queues
-    └── parseQueue.js               # BullMQ job queue
-```
-
----
-
-## ⚙️ Configuration
+## Configuration
 <a name="configuration"></a>
 
-### Environment Variables Explanation
+All backend settings are read from `server/.env` by `app/core/config.py` (Pydantic Settings, case-sensitive).
 
-#### Server Configuration
-- `PORT`: Server listening port (default: 3000)
-- `NODE_ENV`: Environment mode (development/production)
-- `LOG_LEVEL`: Logging verbosity (debug/info/warn/error)
+| Variable | Default | Notes |
+|---|---|---|
+| `DATABASE_URL` | *(required)* | `postgresql://user:pass@host:5432/bidsense`; rewritten to `postgresql+asyncpg://` automatically. A `?sslmode=...` query param triggers an SSL context and is stripped before connecting. |
+| `REDIS_URL` | `redis://localhost:6379/0` | Used by the auth/OTP service |
+| `SECRET_KEY` | `change-this-secret-key-in-production` | JWT signing key (HS256) |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | Access token lifetime |
+| `REFRESH_TOKEN_EXPIRE_DAYS` | `14` | Refresh token lifetime |
+| `CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Comma-separated |
+| `AI_PROVIDER` | `openai` | — |
+| `AI_API_KEY` | `""` | Empty ⇒ offline fallback responses/scores |
+| `AI_MODEL` | `gpt-4o-mini` | Chat/scoring model |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` / `SMTP_FROM_EMAIL` / `SMTP_FROM_NAME` | example values | Reserved for outbound email (not yet sent) |
+| `MEDIA_ROOT` | `/workspace/server/media` | Upload directory (avatars) |
+| `MAX_UPLOAD_SIZE_MB` | `10` | Upload limit |
+| `APP_ENV` | `development` | — |
+| `DEBUG` | `true` | Enables SQL echo and returns `debug_otp` in auth responses |
 
-#### Database
-- `MONGODB_URI`: MongoDB connection string
-
-#### Authentication
-- `JWT_SECRET`: Secret key for JWT signing
-- `JWT_EXPIRE`: JWT token expiration time
-- `REFRESH_TOKEN_EXPIRE`: Refresh token expiration
-
-#### AI/Scoring
-- `GEMINI_API_KEY`: Google Gemini API key for proposal parsing
-- `SCORE_WEIGHTS_*`: Weights for scoring algorithm
-
-#### Email
-- `GMAIL_APP_PASSWORD`: 16-char password from Google
-- `EMAIL_INBOUND_SECRET`: Secret for email webhook validation
-
-### Scoring Algorithm
-
-The BidSense scoring system evaluates proposals across four dimensions:
-
-```
-Total Score = (Price × Weight) + (Delivery × Weight) + (Warranty × Weight) + (Completeness × Weight)
-```
-
-**Default Weights** (configurable via admin panel):
-- Price: 50% - Cost competitiveness
-- Delivery: 20% - Timeline feasibility  
-- Warranty: 10% - Coverage adequacy
-- Completeness: 20% - Response quality
-
-Each dimension is scored 0-100 based on AI analysis of vendor responses.
-3. **Configure `.env`**:
-   ```env
-   EMAIL_SERVICE=gmail
-   GMAIL_USER=your-email@gmail.com
-   GMAIL_APP_PASSWORD=xxxx-xxxx-xxxx-xxxx
-   ```
-
-#### Receiving Emails (Inbound Processing)
-
-The system supports multiple email matching methods:
-
-1. **Reply Token**: Vendors reply to `rfp+{token}@yourdomain.com`
-2. **Explicit RFP ID**: Include `rfp_id` in the webhook payload
-3. **Vendor Email Match**: System matches vendor email to sent RFPs
-4. **Subject Match**: AI analyzes subject line for RFP keywords
-5. **AI Match**: Gemini AI matches email content to open RFPs
-6. **Fallback**: Matches to most recent active RFP
-
-Configure an email webhook (e.g., SendGrid, Mailgun) to POST to:
-```
-POST /api/emails/inbound
-```
-
-### How to Run Everything Locally
-
-```bash
-# Terminal 1: Start MongoDB (if local)
-mongod
-
-# Terminal 2: Start Redis (optional, for queues)
-redis-server
-
-# Terminal 3: Start Backend Server
-cd server
-npm run dev
-# Server runs on http://localhost:3000
-
-# Terminal 4: Start Frontend Dev Server
-cd client
-npm run dev
-# Frontend runs on http://localhost:5173
-```
-
-### Seed Data / Initial Scripts
-
-```bash
-# Check database status
-cd server
-node scripts/database-status.js
-
-# Clean database (remove all data)
-node scripts/complete-database-cleanup.js
-
-# Run migrations
-npm run migrate
-```
+Frontend: `VITE_API_URL` only.
 
 ---
 
-## 🛠 Tech Stack
+## API Reference
+<a name="api-reference"></a>
 
-### Frontend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| React | 19.2.0 | UI Framework |
-| Vite | 7.2.5 (rolldown) | Build Tool |
-| Zustand | 5.0.9 | State Management |
-| React Router DOM | 7.10.0 | Client-side Routing |
-| Tailwind CSS | 4.1.17 | Styling |
-| Lucide React | 0.555.0 | Icons |
-| Recharts | 3.5.1 | Data Visualization |
-| Axios | 1.13.2 | HTTP Client |
+Everything is mounted under `/api`; interactive docs live at `/api/docs`. All routes require an `Authorization: Bearer <access token>` header except `/api/auth/*` and `/api/invitations/*`.
 
-### Backend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Node.js | 18+ | Runtime |
-| Express | 4.18.2 | Web Framework |
-| Mongoose | 7.5.0 | MongoDB ODM |
-| BullMQ | 4.10.0 | Job Queues |
-| Nodemailer | 7.0.11 | Email Sending |
-| Multer | 1.4.5 | File Upload |
-| UUID | 13.0.0 | ID Generation |
+### Authentication — `/api/auth`
 
-### Database
-| Technology | Purpose |
-|------------|---------|
-| MongoDB | Primary Database |
-| Redis | Queue Storage (optional) |
+| Method | Path | Description |
+|---|---|---|
+| POST | `/register` | Create an unverified user and issue an OTP (`debug_otp` returned when `DEBUG=true`) |
+| POST | `/verify-otp` | Verify OTP, mark user verified, return user + tokens |
+| POST | `/resend-otp` | Reissue a registration OTP |
+| POST | `/login` | Email/password login → user + access & refresh tokens |
+| POST | `/refresh` | Exchange refresh token for a new access token |
+| POST | `/forgot-password` | Issue a reset OTP (always returns a generic message) |
+| POST | `/reset-password` | Set a new password using the reset OTP |
+| POST | `/logout` | No-op acknowledgement; refresh tokens are not revoked yet |
+| GET | `/me` | Current user |
 
-### AI Provider
-| Technology | Model | Purpose |
-|------------|-------|---------|
-| Google Gemini | gemini-2.0-flash | RFP Parsing, Proposal Parsing, Email Matching, Proposal Scoring |
+### Users — `/api/users`
 
-### Email Solution
-| Provider | Purpose |
-|----------|---------|
-| Gmail (Nodemailer) | Outbound email sending |
-| Webhook Integration | Inbound email processing (SendGrid/Mailgun compatible) |
+`GET /me` · `PATCH /me` · `PUT /me/password` · `POST /me/avatar`
 
----
+### Vendors — `/api/vendors`
 
-## � API Documentation
-<a name="api-documentation"></a>
-```
-http://localhost:3000/api
-```
+`GET /` (list, filterable) · `POST /` · `GET /metrics` · `GET /{vendor_id}` · `PATCH /{vendor_id}` · `DELETE /{vendor_id}`
 
-### RFP Endpoints
+### RFPs — `/api/rfps`
 
-#### Parse RFP Text
-```http
-POST /api/rfp/parse
-```
+| Method | Path | Description |
+|---|---|---|
+| GET | `/` | List the current user's RFPs |
+| POST | `/` | Create an RFP (draft) |
+| GET | `/{rfp_id}` | Fetch one RFP |
+| PATCH | `/{rfp_id}` | Update RFP fields |
+| PATCH | `/{rfp_id}/document` | Update the JSONB `document` body |
+| POST | `/{rfp_id}/publish` | Publish (status → `open`, sets `published_at`) |
+| POST | `/{rfp_id}/send` | Create tokenized invitations for `vendor_ids` |
+| GET | `/{rfp_id}/analytics` | Invitation/proposal statistics |
+| GET | `/{rfp_id}/history` | `RfpEvent` audit trail |
+| DELETE | `/{rfp_id}` | Delete an RFP |
 
-**Request Body:**
-```json
-{
-  "message": "We need 10 managed switches and 5 routers for our office. Budget is $15,000. Need delivery within 2 weeks."
-}
-```
+### Proposals — `/api/proposals`
 
-**Success Response (200):**
-```json
-{
-  "ok": true,
-  "parsed_rfp": {
-    "title": "Office Network Equipment",
-    "summary": "Request for managed switches and routers",
-    "budget": 15000,
-    "currency": "USD",
-    "delivery_days": 14,
-    "line_items": [
-      { "name": "managed switches", "quantity": 10 },
-      { "name": "routers", "quantity": 5 }
-    ]
-  },
-  "parse_confidence": 0.85,
-  "warnings": []
-}
-```
+| Method | Path | Description |
+|---|---|---|
+| GET | `/` | List proposals for the user's RFPs |
+| GET | `/compare?ids=<uuid,uuid>` | Side-by-side comparison payload |
+| GET | `/{proposal_id}` | Proposal detail |
+| PATCH | `/{proposal_id}/status` | Update status |
+| POST | `/{proposal_id}/score` | Run AI scoring (202; executed inline today) |
 
-**Error Response (400):**
-```json
-{
-  "ok": false,
-  "error": "message is required and must be a non-empty string"
-}
-```
+### Chat — `/api/chat`
+
+`GET /conversations` · `POST /conversations` · `DELETE /conversations/{id}` · `GET /conversations/{id}/messages` · `POST /conversations/{id}/messages` (streams the assistant reply; offline fallback when no `AI_API_KEY`)
+
+### Notifications — `/api/notifications`
+
+`GET /` · `GET /unread-count` · `PATCH /{notification_id}/read` · `POST /read-all`
+
+### Dashboard — `/api/dashboard`
+
+`GET /stats` · `GET /activity`
+
+### Settings — `/api/settings`
+
+`GET|PATCH /notifications` (email/push/digest frequency) · `GET|PATCH /ai` (tone, auto-score, suggestions)
+
+### Public vendor invitations — `/api/invitations` (no auth)
+
+`GET /{token}` — view the invited RFP · `POST /{token}/view` — mark viewed · `POST /{token}/proposal` — submit a proposal
 
 ---
 
-#### Save RFP
-```http
-POST /api/rfps
-```
+## Data Model
+<a name="data-model"></a>
 
-**Request Body:**
-```json
-{
-  "parsed_rfp": {
-    "title": "Office Network Equipment",
-    "budget": 15000,
-    "currency": "USD",
-    "delivery_days": 14,
-    "line_items": [...]
-  },
-  "raw_text": "Original message text..."
-}
-```
+PostgreSQL via SQLAlchemy 2.0 (`server/app/models/`). All primary keys are UUIDs.
 
-**Success Response (201):**
-```json
-{
-  "ok": true,
-  "_id": "507f1f77bcf86cd799439011",
-  "rfp_id": "507f1f77bcf86cd799439011",
-  "reply_to_token": "abc123def456",
-  "status": "draft"
-}
-```
+| Model | Table | Notable fields |
+|---|---|---|
+| `User` | `users` | `full_name`, `email` (unique), `hashed_password`, `is_verified`, `avatar_url`, `last_login_at` |
+| `OtpCode` | — | `user_id`, `purpose`, `code_hash`, `expires_at`, `attempts`, `consumed` |
+| `Vendor` | `vendors` | `owner_user_id`, `name`, `industry`, `website`, `contact_name`, `email`, `phone`, `status` (`active`/`pending`/`inactive`) |
+| `Rfp` | `rfps` | `created_by`, `title`, `type`, `department`, `budget`, `due_date`, `description`, `status` (`draft`/`open`/`closed`/`awarded`/`cancelled`), `document` (JSONB), `published_at` |
+| `RfpInvitation` | — | `rfp_id`, `vendor_id`, `invitation_token` (unique), `status`, `viewed_at`, `submitted_at` |
+| `RfpEvent` | — | `rfp_id`, `actor_type`, `actor_name`, `action`, `detail` — audit trail |
+| `Proposal` | `proposals` | `rfp_id`, `vendor_id`, `amount`, `status` (`pending`/`under_review`/`scored`/`shortlisted`/`rejected`), `ai_score`, `ai_summary`, `technical_score`, `pricing_score`, `experience_score`, `document_url` |
+| `Conversation` / `Message` | — | AI chat threads, `role` ∈ user/assistant |
+| `Notification` | — | `notification_type`, `title`, `body`, `is_read`, `related_rfp_id` |
+| `Activity` | — | `actor_name`, `action`, `target` — dashboard feed |
+| `UserSettings` | — | notification toggles, `digest_frequency`, `ai_tone`, `ai_auto_score`, `ai_suggestions` |
+
+Schema is created by `app/db/init_db.py` (`Base.metadata.create_all`). Alembic is installed but no migration scripts exist yet.
 
 ---
 
-#### List RFPs
-```http
-GET /api/rfps?status=draft&limit=10&skip=0
-```
+## Frontend Routes
+<a name="frontend-routes"></a>
 
-**Success Response (200):**
-```json
-{
-  "ok": true,
-  "count": 5,
-  "rfps": [
-    {
-      "_id": "507f1f77bcf86cd799439011",
-      "title": "Office Network Equipment",
-      "status": "draft",
-      "budget": 15000,
-      "created_at": "2025-12-06T10:00:00Z"
-    }
-  ]
-}
-```
+Defined in `client/src/App.jsx`.
+
+- **Auth**: `/login`, `/signup`, `/forgot-password`, `/otp-verification`
+- **App** (inside `Layout`): `/dashboard`, `/chat`, `/rfps`, `/rfps/create`, `/rfps/editor`, `/rfps/send`, `/rfps/analytics`, `/rfps/history`, `/proposals`, `/proposals/compare`, `/vendors`, `/vendors/add`, `/notifications`, `/settings`
+- **Marketing/public**: `/`, `/pricing`, `/features`, `/enterprise`, `/security`, `/about`, `/careers`, `/blog`, `/contact`, `/docs`, `/api`, `/guides`, `/support`, `/terms`, `/privacy`
 
 ---
 
-#### Get Single RFP
-```http
-GET /api/rfps/:id
-```
+## Current Limitations
+<a name="current-limitations"></a>
 
-**Success Response (200):**
-```json
-{
-  "ok": true,
-  "rfp": {
-    "_id": "507f1f77bcf86cd799439011",
-    "title": "Office Network Equipment",
-    "budget": 15000,
-    "line_items": [...],
-    "status": "draft"
-  }
-}
-```
-
-**Error Response (404):**
-```json
-{
-  "ok": false,
-  "error": "RFP not found"
-}
-```
+- **Email is not sent.** `POST /api/rfps/{id}/send` creates invitation records only; SMTP settings and `aiosmtplib` are in place but unused. OTPs are surfaced via `debug_otp` in responses while `DEBUG=true`.
+- **No migrations.** Schema changes require re-running `app/db/init_db.py` (or adding Alembic revisions).
+- **Scoring runs inline.** `/proposals/{id}/score` returns 202 but performs the AI call during the request; no worker queue is wired up.
+- **No automated test suite yet**, although pytest/pytest-asyncio are installed.
+- **Logout does not revoke tokens** — `POST /api/auth/logout` only returns a message; there is no refresh-token blacklist.
+- **Frontend API base URL default** (`http://localhost:5000/api`) does not match the backend default port; set `VITE_API_URL`.
+- The `test/` directory holds product/planning documents and prototype assets, not an automated test suite.
 
 ---
 
-#### Update RFP
-```http
-PUT /api/rfps/:id
-```
+## Additional Documentation
+<a name="additional-documentation"></a>
 
-**Request Body:**
-```json
-{
-  "title": "Updated Title",
-  "budget": 20000,
-  "status": "sent"
-}
-```
-
----
-
-#### Send RFP to Vendors
-```http
-POST /api/rfps/:id/send
-```
-
-**Request Body:**
-```json
-{
-  "vendor_ids": ["vendor_id_1", "vendor_id_2"],
-  "message": "Optional custom message"
-}
-```
-
-**Success Response (200):**
-```json
-{
-  "ok": true,
-  "sent_count": 2,
-  "results": [
-    { "vendor_id": "...", "status": "sent" },
-    { "vendor_id": "...", "status": "sent" }
-  ]
-}
-```
-
----
-
-### Vendor Endpoints
-
-#### List Vendors
-```http
-GET /api/vendors?active=true
-```
-
-**Query Parameters:**
-- `active`: `true` (default) | `false` | `all`
-
-**Success Response (200):**
-```json
-{
-  "ok": true,
-  "count": 10,
-  "vendors": [
-    {
-      "_id": "...",
-      "name": "Acme Corp",
-      "contact_email": "sales@acme.com",
-      "contact_person": "John Doe",
-      "rating": 4.5,
-      "active": true
-    }
-  ]
-}
-```
-
----
-
-#### Create Vendor
-```http
-POST /api/vendors
-```
-
-**Request Body:**
-```json
-{
-  "name": "Acme Corp",
-  "contact_email": "sales@acme.com",
-  "contact_person": "John Doe",
-  "phone": "+1-555-0123",
-  "address": "123 Main St",
-  "notes": "Preferred vendor for IT equipment"
-}
-```
-
-**Error Response (409):**
-```json
-{
-  "ok": false,
-  "message": "Vendor with email sales@acme.com already exists"
-}
-```
-
----
-
-#### Update Vendor
-```http
-PUT /api/vendors/:id
-```
-
-#### Delete Vendor
-```http
-DELETE /api/vendors/:id
-```
-
----
-
-### Email Inbound Endpoint
-
-#### Process Vendor Email Response
-```http
-POST /api/emails/inbound
-```
-
-**Request Body:**
-```json
-{
-  "from": "vendor@company.com",
-  "subject": "RE: RFP for Office Equipment",
-  "body": "We are pleased to submit our proposal...\n\nTotal Price: $12,500\nDelivery: 10 days\nWarranty: 24 months",
-  "rfp_id": "507f1f77bcf86cd799439011",
-  "attachments": [
-    {
-      "filename": "proposal.pdf",
-      "content_type": "application/pdf",
-      "content": "base64-encoded-content..."
-    }
-  ]
-}
-```
-
-**Success Response (200):**
-```json
-{
-  "ok": true,
-  "proposal_id": "...",
-  "rfp_id": "...",
-  "mapping_method": "ai-match",
-  "parsed_proposal": {
-    "vendor_name": "Company Inc",
-    "total_price": 12500,
-    "currency": "USD",
-    "delivery_days": 10,
-    "warranty_months": 24
-  },
-  "score": {
-    "final_score": 78,
-    "breakdown": {
-      "price": 85,
-      "delivery": 70,
-      "warranty": 80,
-      "completeness": 75
-    }
-  }
-}
-```
-
----
-
-### Comparison Endpoint
-
-#### Compare Proposals for RFP
-```http
-GET /api/rfps/:id/compare
-```
-
-**Success Response (200):**
-```json
-{
-  "ok": true,
-  "rfp_id": "...",
-  "rfp_title": "Office Network Equipment",
-  "rfp_budget": 15000,
-  "proposals": [
-    {
-      "proposal_id": "...",
-      "vendor_name": "Acme Corp",
-      "total_price": 12500,
-      "delivery_days": 10,
-      "warranty_months": 24,
-      "final_score": 85,
-      "score_breakdown": {
-        "price_score": 90,
-        "delivery_score": 80,
-        "warranty_score": 85,
-        "completeness_score": 75
-      },
-      "reasoning": "Best price-to-value ratio..."
-    }
-  ],
-  "recommendation": {
-    "vendor_name": "Acme Corp",
-    "reasoning": "Highest overall score with competitive pricing"
-  }
-}
-```
-
----
-
-### Health Check Endpoints
-
-```http
-GET /api/health/extended    # Full system health
-GET /api/health/ready       # Readiness probe
-GET /api/health/live        # Liveness probe
-```
-
----
-
-## 🎯 Decisions & Assumptions
-
-### Key Design Decisions
-
-#### 1. Data Models
-
-**RFP Model:**
-- Stores parsed RFP data with line items as embedded documents
-- Uses `reply_to_token` for email tracking (12-char UUID)
-- Tracks `sent_to_vendors` array for matching inbound responses
-- Status workflow: `draft` → `sent` → `active` → `closed`
-
-**Proposal Model:**
-- Links to RFP via `rfp_id` (nullable for unmatched proposals)
-- Stores both raw email and parsed JSON
-- `mapping_method` enum tracks how proposal was matched to RFP
-- `unmapped` flag for proposals that couldn't be linked
-
-**Vendor Model:**
-- Simple contact management with email uniqueness
-- `active` flag for soft delete
-- `rating` (0-5) for vendor quality tracking
-
-#### 2. AI Integration Flow
-
-```
-User Input → Gemini AI Parse → Validation → Store RFP
-                    ↓
-Vendor Email → Multiple Match Methods → Gemini AI Parse → Score → Store Proposal
-```
-
-#### 3. Email Matching Strategy (Priority Order)
-
-1. **Explicit RFP ID** - Most reliable when provided
-2. **Reply Token** - Standard reply-to pattern
-3. **Vendor Email Match** - Match by sender to sent RFPs
-4. **Subject Match** - Keywords in subject line
-5. **AI Match** - Gemini analyzes content vs open RFPs
-6. **Fallback** - Most recent active RFP
-
-#### 4. Scoring Algorithm
-
-Weighted scoring system (configurable via `.env`):
-- **Price Score (50%)**: Lower price relative to budget = higher score
-- **Delivery Score (20%)**: Faster delivery = higher score
-- **Warranty Score (10%)**: Longer warranty = higher score
-- **Completeness Score (20%)**: All fields present = higher score
-
-#### 5. State Management (Frontend)
-
-- **Zustand** for global state with localStorage persistence
-- Separate stores for: RFPs, Vendors, Notifications
-- Optimistic UI updates with error rollback
-
-### Assumptions Made
-
-#### Email Processing
-- Inbound emails arrive via webhook (SendGrid/Mailgun format)
-- Attachments are base64 encoded
-- PDF/image attachments processed via Gemini Vision API
-- One proposal per email (no batched responses)
-
-#### RFP Format
-- Natural language input (not structured forms)
-- Currency symbols detected: $, ₹, €, £
-- Time expressions: "within X days/weeks/months"
-- Indian number system supported: lakhs, crores
-
-#### Vendor Responses
-- Vendors respond with pricing, delivery, warranty info
-- May include attachments with detailed quotes
-- Email subject may reference original RFP title
-
-#### System Limitations
-- No real-time updates (polling-based)
-- Single-tenant architecture (no multi-org support)
-- English language only for AI parsing
-- Maximum 16KB JSON payload per request
-
----
-
-## 🤖 AI Tools Usage
-
-### Tools Used During Development
-
-| Tool | Primary Use |
-|------|-------------|
-| **GitHub Copilot** | Code completion, boilerplate generation |
-| **Claude (Anthropic)** | Architecture decisions, debugging complex issues, code review |
-| **Cursor IDE** | AI-assisted editing, multi-file refactoring |
-
-### What AI Helped With
-
-#### 1. **Boilerplate & Setup**
-- Express server scaffolding
-- Mongoose schema definitions
-- React component structure
-- Tailwind CSS configurations
-
-#### 2. **Complex Logic**
-- Email matching algorithm (6-method cascade)
-- AI prompt engineering for RFP/Proposal parsing
-- Scoring algorithm implementation
-- Currency detection (INR lakhs/crores support)
-
-#### 3. **Debugging**
-- ES Modules compatibility issues
-- MongoDB connection handling
-- CORS configuration
-- Email authentication setup
-
-#### 4. **Design Decisions**
-- State management architecture (Zustand vs Redux)
-- API response format standardization
-- Error handling patterns
-- Database schema normalization
-
-#### 5. **Code Quality**
-- TypeScript-style JSDoc comments
-- Consistent error response format
-- API documentation generation
-- Code refactoring suggestions
-
-#### 6. **UI/UX Improvements**
-- Styled confirmation dialogs (replacing browser defaults)
-- Star rating display logic
-- Form validation feedback
-- Loading state handling
-
-### AI Prompt Examples Used
-
-**For RFP Parsing:**
-```
-"You are an expert RFP parser. Extract structured data including 
-line_items, budget, delivery timeline, and warranty requirements..."
-```
-
-**For Email Matching:**
-```
-"Match this vendor email to the correct RFP from this list. 
-Consider subject keywords, product mentions, and pricing context..."
-```
-
-**For Proposal Scoring:**
-```
-"Evaluate this proposal against the RFP requirements. 
-Score on price, delivery, warranty, and completeness (0-100)..."
-```
-
----
-
-## 📁 Project Structure
-
-```
-RequestsforProposal/
-├── client/                    # React Frontend
-│   ├── src/
-│   │   ├── components/        # Reusable UI components
-│   │   ├── layout/            # Layout components
-│   │   ├── pages/             # Page components
-│   │   ├── store/             # Zustand stores
-│   │   └── App.jsx            # Main app component
-│   └── package.json
-│
-├── server/                    # Express Backend
-│   ├── src/
-│   │   ├── adapters/          # AI & Email adapters
-│   │   ├── controllers/       # Route handlers
-│   │   ├── db/                # Database connection
-│   │   ├── email/             # Email configuration
-│   │   ├── middlewares/       # Express middlewares
-│   │   ├── models/            # Mongoose schemas
-│   │   ├── routes/            # API routes
-│   │   └── utils/             # Utility functions
-│   ├── scripts/               # Database scripts
-│   └── package.json
-│
-└── README.md                  # This file
-```
-
----
-
-## � Support & Contact
-
-For issues, questions, or suggestions:
-1. Check existing [GitHub Issues](https://github.com/your-repo/issues)
-2. Create a new issue with detailed description
-3. Contact development team at support@rfpbidsense.com
-
----
-
-## 📚 Additional Resources
-
-- [Google Gemini API Docs](https://ai.google.dev/docs)
-- [Express.js Documentation](https://expressjs.com/)
-- [React Documentation](https://react.dev/)
-- [MongoDB Documentation](https://docs.mongodb.com/)
-- [Mongoose Documentation](https://mongoosejs.com/)
-- [Nodemailer Documentation](https://nodemailer.com/)
-- [JWT.io](https://jwt.io/)
-
----
-
-## 📄 License
-
-MIT License - See LICENSE file for details.
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
----
-
-## 🙏 Acknowledgments
-
-- Google for Gemini AI capabilities
-- Express.js and Node.js communities
-- React community and hooks innovations
-- MongoDB for flexible database schema
-
----
-
-**Last Updated**: January 7, 2026  
-**Version**: 1.0.0  
-**Status**: Active Development
-
-**Built with ❤️ by the RFP BidSense Team**
+Design documents in the repository root describe the intended target architecture (some sections predate the current FastAPI implementation): `BIDSENSE_SYSTEM_DESIGN.md`, `High-LevelSystemArchitecture.md`, `Backend Architecture.md`, `Frontend Architecture.md`, `Database Schema Design.md`, `API Architecture & Standards.md`, `AI Agent Architecture.md`, `Security Architecture.md`, and others.
