@@ -1,0 +1,113 @@
+from uuid import UUID
+from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime, date
+from decimal import Decimal
+from enum import Enum
+
+
+class RfpStatusEnum(str, Enum):
+    DRAFT = "draft"
+    OPEN = "open"
+    CLOSED = "closed"
+    AWARDED = "awarded"
+    CANCELLED = "cancelled"
+
+
+class RfpBase(BaseModel):
+    title: str = Field(min_length=3, max_length=200)
+    type: str = Field(min_length=1, max_length=60)
+    department: str | None = Field(None, max_length=80)
+    budget: Decimal | None = None
+    dueDate: date
+    description: str | None = None
+
+
+class RfpCreate(RfpBase):
+    pass
+
+
+class RfpUpdate(BaseModel):
+    title: str | None = Field(None, min_length=3, max_length=200)
+    type: str | None = Field(None, min_length=1, max_length=60)
+    department: str | None = Field(None, max_length=80)
+    budget: Decimal | None = None
+    dueDate: date | None = None
+    description: str | None = None
+    status: RfpStatusEnum | None = None
+
+
+class RfpDocumentUpdate(BaseModel):
+    document: dict
+
+
+class RfpPublic(RfpBase):
+    id: UUID
+    created_by: UUID | None
+    status: str
+    vendorCount: int = 0
+    deadline: date
+    created_at: datetime
+    updated_at: datetime
+    published_at: datetime | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class RfpListResponse(BaseModel):
+    items: list[RfpPublic]
+    total: int
+    page: int
+    page_size: int
+
+
+class RfpSendRequest(BaseModel):
+    vendor_ids: list[UUID]
+    invitation_message: str | None = None
+
+
+class RfpAnalytics(BaseModel):
+    total_invitations: int
+    viewed_count: int
+    started_count: int
+    submitted_count: int
+    declined_count: int
+    avg_bid_amount: float | None = None
+    lowest_bid_amount: float | None = None
+    highest_bid_amount: float | None = None
+
+
+class RfpEventPublic(BaseModel):
+    id: UUID
+    rfp_id: UUID
+    actor_type: str
+    actor_name: str | None
+    action: str
+    detail: str | None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class RfpHistoryResponse(BaseModel):
+    events: list[RfpEventPublic]
+
+
+class InvitationStatusEnum(str, Enum):
+    INVITED = "invited"
+    VIEWED = "viewed"
+    STARTED = "started"
+    SUBMITTED = "submitted"
+    DECLINED = "declined"
+
+
+class RfpInvitationPublic(BaseModel):
+    id: UUID
+    rfp_id: UUID
+    vendor_id: UUID
+    vendor_name: str
+    status: str
+    invited_at: datetime
+    viewed_at: datetime | None = None
+    submitted_at: datetime | None = None
+
+    model_config = ConfigDict(from_attributes=True)
