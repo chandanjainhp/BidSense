@@ -24,7 +24,7 @@ const OtpActions = ({ isLoading, isDisabled }) => {
 
             <a
                 href="#"
-                className="block text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors"
+                className="block text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
             >
                 Back to Sign In
             </a>

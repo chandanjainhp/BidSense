@@ -71,12 +71,12 @@ const TopBar = ({ isSidebarOpen, setIsSidebarOpen, setIsNotifOpen }) => {
     };
 
     return (
-        <header className="h-16 bg-gray-900 backdrop-blur-md border-b border-gray-800 px-6 flex items-center sticky top-0 z-40">
+        <header className="h-16 bg-white dark:bg-gray-900 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-6 flex items-center sticky top-0 z-40 transition-colors">
             {/* Left Section - Mobile Menu */}
             <div className="flex items-center">
                 <button
                     onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                    className="p-2 -ml-2 text-gray-400 hover:text-white lg:hidden"
+                    className="p-2 -ml-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white lg:hidden"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -101,24 +101,24 @@ const TopBar = ({ isSidebarOpen, setIsSidebarOpen, setIsNotifOpen }) => {
                         onFocus={() => setIsSearchOpen(true)}
                         onKeyDown={handleKeyDown}
                         placeholder="Search pages, actions..."
-                        className="w-full pl-12 pr-4 py-2.5 bg-gray-800 border border-gray-700 rounded-xl text-sm font-medium text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/30 focus:bg-gray-800 focus:border-indigo-500 outline-none transition-all"
+                        className="w-full pl-12 pr-4 py-2.5 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/30 focus:bg-white dark:focus:bg-gray-800 focus:border-indigo-500 outline-none transition-all"
                     />
                     {/* Keyboard shortcut hint */}
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden lg:flex items-center space-x-1">
-                        <kbd className="px-2 py-0.5 bg-gray-700 text-gray-400 text-xs font-medium rounded">⌘</kbd>
-                        <kbd className="px-2 py-0.5 bg-gray-700 text-gray-400 text-xs font-medium rounded">K</kbd>
+                        <kbd className="px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs font-medium rounded">⌘</kbd>
+                        <kbd className="px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs font-medium rounded">K</kbd>
                     </div>
 
                     {/* Search Results Dropdown */}
                     {isSearchOpen && filteredItems.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-gray-800 border border-gray-700 rounded-xl shadow-2xl overflow-hidden z-50">
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl overflow-hidden z-50">
                             {filteredItems.map((item, index) => (
                                 <button
                                     key={item.path}
                                     onClick={() => handleSelectItem(item)}
                                     className={`w-full flex items-center px-4 py-3 text-left transition-colors ${index === selectedIndex
                                             ? 'bg-indigo-600 text-white'
-                                            : 'text-gray-300 hover:bg-gray-700'
+                                            : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                                         }`}
                                 >
                                     <svg className="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,8 +138,8 @@ const TopBar = ({ isSidebarOpen, setIsSidebarOpen, setIsNotifOpen }) => {
 
                     {/* No results message */}
                     {isSearchOpen && searchQuery.trim() && filteredItems.length === 0 && (
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-gray-800 border border-gray-700 rounded-xl shadow-2xl p-4 z-50">
-                            <p className="text-gray-400 text-sm text-center">No results found for "{searchQuery}"</p>
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl p-4 z-50">
+                            <p className="text-gray-500 dark:text-gray-400 text-sm text-center">No results found for "{searchQuery}"</p>
                         </div>
                     )}
                 </div>
@@ -149,22 +149,22 @@ const TopBar = ({ isSidebarOpen, setIsSidebarOpen, setIsNotifOpen }) => {
 
             <div className="flex items-center space-x-3">
                 {/* Notification Button */}
-                <button onClick={() => setIsNotifOpen(true)} className="relative p-2 text-gray-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-xl transition-all">
+                <button onClick={() => setIsNotifOpen(true)} className="relative p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-500/10 dark:text-gray-400 dark:hover:text-indigo-400 rounded-xl transition-all">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
-                    <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-gray-900 rounded-full"></span>
+                    <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
                 </button>
 
                 {/* Divider */}
-                <div className="w-px h-6 bg-gray-700"></div>
+                <div className="w-px h-6 bg-gray-200 dark:bg-gray-700"></div>
 
                 {/* Dark Mode Toggle Button */}
                 <button
                     onClick={toggleTheme}
                     className={`p-2 rounded-xl transition-all ${theme === 'dark'
                         ? 'text-yellow-400 hover:bg-yellow-500/10'
-                        : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                        : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800'
                         }`}
                     title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                 >
@@ -182,7 +182,7 @@ const TopBar = ({ isSidebarOpen, setIsSidebarOpen, setIsNotifOpen }) => {
                 {/* Logout Button */}
                 <button
                     onClick={handleLogout}
-                    className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+                    className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-500/10 dark:text-gray-400 dark:hover:text-red-400 rounded-xl transition-all"
                     title="Logout"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

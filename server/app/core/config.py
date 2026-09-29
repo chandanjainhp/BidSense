@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     AI_PROVIDER: str = Field(default="openai")
     AI_API_KEY: str = Field(default="")
     AI_MODEL: str = Field(default="gpt-4o-mini")
+    # OpenAI-compatible embeddings model used by the RAG knowledge base
+    AI_EMBEDDING_MODEL: str = Field(default="text-embedding-3-small")
 
     # Email / SMTP
     SMTP_HOST: str = Field(default="smtp.example.com")

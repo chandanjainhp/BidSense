@@ -1,10 +1,12 @@
-from typing import Optional, Annotated
+from typing import Annotated, Optional
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.security import verify_access_token
 from app.db.base import get_db_session
 from app.models.user import User
-from app.core.security import verify_access_token
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 
@@ -32,6 +34,7 @@ async def get_current_user(
         )
 
     from uuid import UUID
+
     try:
         user_uuid = UUID(user_id)
     except ValueError:
@@ -42,6 +45,7 @@ async def get_current_user(
         )
 
     from sqlalchemy import select
+
     result = await db.execute(select(User).where(User.id == user_uuid))
     user = result.scalar_one_or_none()
 
@@ -60,3 +64,20 @@ async def get_current_active_user(
 ) -> User:
     """Get the current active user (additional checks can be added here)."""
     return current_user
+
+
+async def get_optional_user(
+    token: Annotated[Optional[str], Depends(oauth2_scheme)] = None,
+    db: Annotated[AsyncSession, Depends(get_db_session)] = None,
+) -> Optional[User]:
+    """Like get_current_user but returns None instead of 401 when no/invalid token.
+
+    Used by endpoints accessible to both anonymous and authenticated users
+    (e.g. vendor registration from the public signup flow).
+    """
+    if not token:
+        return None
+    try:
+        return await get_current_user(token=token, db=db)
+    except HTTPException:
+        return None

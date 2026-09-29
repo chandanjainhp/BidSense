@@ -1,0 +1,23 @@
+services:
+  local-database:
+    image: pgvector/pgvector:pg16
+    container_name: local-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bidsense
+      POSTGRES_PASSWORD: bidsense_local
+      POSTGRES_DB: bidsense
+    ports:
+      - "5432:5432"
+    volumes:
+      - bidsense_local_database_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bidsense -d bidsense"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+
+volumes:
+  bidsense_local_database_data:
+    name: bidsense_local_database_data

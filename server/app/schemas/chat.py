@@ -45,3 +45,16 @@ class ChatMessageRequest(BaseModel):
 class ChatStreamResponse(BaseModel):
     token: str
     done: bool = False
+
+
+class RetrievedSource(BaseModel):
+    document_id: str
+    filename: str
+    chunk_index: int
+    score: float
+    excerpt: str = ""
+
+
+class ChatReplyResponse(MessagePublic):
+    """AI reply plus the knowledge-base chunks (RAG sources) used to answer."""
+    sources: list[RetrievedSource] = []

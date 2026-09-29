@@ -53,8 +53,31 @@ const ProposalInboxPage = () => {
   }, []);
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('score');
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [selectedProposal, setSelectedProposal] = useState(null);
+
+  const parseAmount = (a) => (typeof a === 'string' ? Number(a.replace(/[$,]/g, '')) || 0 : a ?? 0);
+
+  const filteredProposals = proposals
+    .filter((p) => {
+      const q = searchTerm.trim().toLowerCase();
+      const matchesSearch = !q
+        || p.vendor.toLowerCase().includes(q)
+        || p.rfp.toLowerCase().includes(q);
+      const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'budget_asc': return parseAmount(a.amount) - parseAmount(b.amount);
+        case 'budget_desc': return parseAmount(b.amount) - parseAmount(a.amount);
+        case 'newest': return (b.date || '').localeCompare(a.date || '');
+        case 'score':
+        default: return (b.score ?? -1) - (a.score ?? -1);
+      }
+    });
 
   const handleOpenReview = (proposal) => {
     setSelectedProposal(proposal);
@@ -74,7 +97,14 @@ const ProposalInboxPage = () => {
       <ProposalHeader />
 
       {/* --- Filters & Search Bar --- */}
-      <ProposalFilters searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+      <ProposalFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+      />
 
       {/* --- Proposals Table --- */}
       {loading ? (
@@ -82,7 +112,12 @@ const ProposalInboxPage = () => {
           {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-14 bg-white dark:bg-gray-900/50 rounded-xl animate-pulse" />)}
         </div>
       ) : (
-        <ProposalTable proposals={proposals} onReview={handleOpenReview} />
+        <ProposalTable
+          proposals={filteredProposals}
+          totalCount={proposals.length}
+          filteredCount={filteredProposals.length}
+          onReview={handleOpenReview}
+        />
       )}
 
       {/* --- Review Proposal Slide-over --- */}

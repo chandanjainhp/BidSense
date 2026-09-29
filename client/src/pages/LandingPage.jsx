@@ -3,7 +3,6 @@ import LandingNavbar from '../components/landing/LandingNavbar';
 import SEO from '../components/common/SEO';
 import PageTransition from '../components/common/PageTransition';
 import HeroSection from '../components/landing/HeroSection';
-import TrustedBySection from '../components/landing/TrustedBySection';
 import ProcurementFlowSection from '../components/landing/ProcurementFlowSection';
 import ProductPreviewSection from '../components/landing/ProductPreviewSection';
 import MetricsSection from '../components/landing/MetricsSection';
@@ -24,7 +23,6 @@ const LandingPage = () => {
             <LandingNavbar />
             <main>
                 <HeroSection />
-                <TrustedBySection />
                 <ProcurementFlowSection />
                 <ProductPreviewSection />
                 <MetricsSection />

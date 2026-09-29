@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ProposalFilters = ({ searchTerm, setSearchTerm }) => {
+const ProposalFilters = ({ searchTerm, setSearchTerm, statusFilter, setStatusFilter, sortBy, setSortBy }) => {
     return (
         <section className="bg-white dark:bg-gray-900/50 backdrop-blur-xl p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 mb-8 flex flex-col md:flex-row gap-4 items-center transition-colors">
             <div className="relative flex-1 w-full">
@@ -16,16 +16,25 @@ const ProposalFilters = ({ searchTerm, setSearchTerm }) => {
                 />
             </div>
             <div className="flex items-center space-x-2 w-full md:w-auto">
-                <select className="flex-1 md:w-40 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 outline-none focus:border-indigo-500 transition-colors">
-                    <option>All Statuses</option>
-                    <option>Scored</option>
-                    <option>Under Review</option>
-                    <option>Pending</option>
+                <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="flex-1 md:w-40 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 outline-none focus:border-indigo-500 transition-colors"
+                >
+                    <option value="all">All Statuses</option>
+                    <option value="Scored">Scored</option>
+                    <option value="Under Review">Under Review</option>
+                    <option value="Pending">Pending</option>
                 </select>
-                <select className="flex-1 md:w-40 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 outline-none focus:border-indigo-500 transition-colors">
-                    <option>Sort by Score</option>
-                    <option>Newest First</option>
-                    <option>Budget: Low to High</option>
+                <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="flex-1 md:w-40 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 outline-none focus:border-indigo-500 transition-colors"
+                >
+                    <option value="score">Sort by Score</option>
+                    <option value="newest">Newest First</option>
+                    <option value="budget_asc">Budget: Low to High</option>
+                    <option value="budget_desc">Budget: High to Low</option>
                 </select>
             </div>
         </section>

@@ -82,11 +82,11 @@ const RfpListGallery = () => {
 
       {/* --- Footer Pagination --- */}
       <footer className="max-w-7xl mx-auto mt-12 flex items-center justify-center space-x-4">
-        <button className="p-2 bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-indigo-600 disabled:opacity-30" disabled>
+        <button className="p-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 disabled:opacity-30" disabled>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
         </button>
-        <span className="text-sm font-bold text-gray-500">Page 1</span>
-        <button className="p-2 bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-indigo-600">
+        <span className="text-sm font-bold text-gray-500 dark:text-gray-400">Page 1</span>
+        <button className="p-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-400 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
         </button>
       </footer>

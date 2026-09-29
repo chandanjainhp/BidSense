@@ -29,7 +29,7 @@ const OtpTimer = ({ onResend, isResending }) => {
 
     return (
         <div className="text-sm">
-            <p className="text-gray-500">
+            <p className="text-gray-500 dark:text-gray-400">
                 Didn't receive the code?{' '}
                 {timer > 0 ? (
                     <span className="text-indigo-600 font-semibold">Resend in {timer}s</span>

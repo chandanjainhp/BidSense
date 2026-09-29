@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const ProposalTable = ({ proposals, onReview }) => {
+const ProposalTable = ({ proposals, totalCount, filteredCount, onReview }) => {
     const [openMenuId, setOpenMenuId] = useState(null);
 
     const toggleMenu = (id) => {
@@ -22,7 +22,17 @@ const ProposalTable = ({ proposals, onReview }) => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50 dark:divide-white/5">
-                        {proposals.map((item) => (
+                        {proposals.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} className="px-6 py-16 text-center">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <svg className="w-10 h-10 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                        <p className="font-bold text-gray-500 dark:text-gray-400">No proposals match your search</p>
+                                        <p className="text-sm text-gray-400 dark:text-gray-500">Try a different vendor name, RFP title, or status filter.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        ) : proposals.map((item) => (
                             <tr key={item.id} className="hover:bg-indigo-50/50 dark:hover:bg-indigo-500/10 transition-colors group cursor-default">
                                 <td className="px-6 py-5">
                                     <p className="font-bold text-gray-900 dark:text-white">{item.vendor}</p>
@@ -102,7 +112,7 @@ const ProposalTable = ({ proposals, onReview }) => {
 
             {/* Pagination Placeholder */}
             <div className="p-6 bg-gray-50/30 dark:bg-gray-800/30 border-t border-gray-100 dark:border-white/5 flex items-center justify-between">
-                <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Showing 5 of 48 proposals</span>
+                <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Showing {filteredCount} of {totalCount} proposal{totalCount === 1 ? '' : 's'}</span>
                 <div className="flex space-x-2">
                     <button className="p-2 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-white dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-all disabled:opacity-30" disabled>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>

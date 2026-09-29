@@ -24,8 +24,9 @@ class AuthService:
         """Register a new user and generate OTP."""
         from sqlalchemy import select
 
-        # Check if user already exists
-        result = await db_session.execute(select(User).where(User.email == register_data.full_name if hasattr(register_data, 'full_name') else register_data.email))
+        # Check if user already exists (bug fix: previously compared email to full_name,
+        # so duplicate registrations crashed with IntegrityError instead of 409)
+        result = await db_session.execute(select(User).where(User.email == register_data.email))
         existing = result.scalar_one_or_none()
         if existing:
             raise ConflictError(

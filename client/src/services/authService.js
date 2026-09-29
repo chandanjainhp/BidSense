@@ -3,12 +3,14 @@ import api from '../api/axios';
 const authService = {
     login: async (email, password) => {
         const response = await api.post('/auth/login', { email, password });
-        const { token, refresh_token: refreshToken } = response.data;
+        // Backend serializes with camelCase aliases (refreshToken)
+        const { token, refreshToken, refresh_token } = response.data;
         if (token) {
             localStorage.setItem('token', token);
         }
-        if (refreshToken) {
-            localStorage.setItem('refresh_token', refreshToken);
+        const refresh = refreshToken || refresh_token;
+        if (refresh) {
+            localStorage.setItem('refresh_token', refresh);
         }
         return response;
     },
@@ -23,12 +25,14 @@ const authService = {
 
     verifyOtp: async (email, code) => {
         const response = await api.post('/auth/verify-otp', { email, code });
-        const { token, refresh_token: refreshToken } = response.data;
+        // Backend serializes with camelCase aliases (refreshToken)
+        const { token, refreshToken, refresh_token } = response.data;
         if (token) {
             localStorage.setItem('token', token);
         }
-        if (refreshToken) {
-            localStorage.setItem('refresh_token', refreshToken);
+        const refresh = refreshToken || refresh_token;
+        if (refresh) {
+            localStorage.setItem('refresh_token', refresh);
         }
         return response;
     },

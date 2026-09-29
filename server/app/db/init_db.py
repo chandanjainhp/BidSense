@@ -10,8 +10,12 @@ from app.models.otp import OtpCode, OtpPurpose
 async def init_db():
     """Initialize the database - create all tables and seed data."""
     async with engine.begin() as conn:
+        # pgvector: required for the RAG knowledge base (document_chunks.embedding)
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+
         # Import all models to ensure they're registered with Base
-        from app.models import user, vendor, rfp, proposal, chat, notification, activity, settings, otp
+        from app.models import user, vendor, rfp, proposal, chat, notification, activity, settings, otp, document
+        from app.models import vendor_profile, product, bulk_pricing, quotation, order
         
         await conn.run_sync(Base.metadata.create_all)
     
@@ -161,6 +165,116 @@ async def init_db():
         
         await session.commit()
         print("Activities seeded.")
+        
+        # -----------------------------------------------------------------
+        # Vendor marketplace seed data
+        # -----------------------------------------------------------------
+        from app.models.vendor_profile import VendorProfile, VendorProfileStatus
+        from app.models.product import Product, VendorService, ListingStatus
+        from app.models.bulk_pricing import BulkPricing, BulkSale
+        
+        result = await session.execute(select(VendorProfile).where(VendorProfile.user_id == demo_user.id))
+        mvp_vendor = result.scalar_one_or_none()
+        
+        if not mvp_vendor:
+            mvp_vendor = VendorProfile(
+                user_id=demo_user.id,
+                business_name="Demo Industrial Supplies",
+                contact_name="Demo User",
+                contact_email="demo@bidsense.io",
+                contact_phone="9876543210",
+                gstin="27ABCDE1234F1Z5",
+                pan="ABCDE1234F",
+                business_category="Industrial Equipment",
+                description="Trusted supplier of industrial safety equipment and consumables.",
+                city="Mumbai",
+                state="Maharashtra",
+                pincode="400001",
+                service_areas=["Mumbai", "Pune", "Nashik"],
+                website="https://demo-industrial.example.com",
+                certifications=["ISO 9001:2015"],
+                documents=[],
+                status=VendorProfileStatus.VERIFIED,
+                verified_at=datetime.now(timezone.utc),
+            )
+            session.add(mvp_vendor)
+            await session.flush()
+            print("Marketplace vendor profile seeded.")
+        
+        # Product with tiered bulk pricing
+        result = await session.execute(
+            select(Product).where(Product.vendor_id == mvp_vendor.id, Product.name == "Industrial Gloves")
+        )
+        gloves = result.scalar_one_or_none()
+        if not gloves:
+            gloves = Product(
+                vendor_id=mvp_vendor.id,
+                name="Industrial Gloves",
+                sku="GLV-001",
+                description="Heavy-duty nitrile gloves for industrial use.",
+                category="Safety Equipment",
+                price=500,
+                stock=5000,
+                unit="box",
+                moq=1,
+                specifications={"material": "Nitrile", "size": "L"},
+                images=[],
+                status=ListingStatus.PUBLISHED,
+            )
+            session.add(gloves)
+            await session.flush()
+            
+            for mn, mx, pr in [(1, 49, 500), (50, 199, 450), (200, 499, 420), (500, None, 390)]:
+                session.add(BulkPricing(product_id=gloves.id, min_quantity=mn, max_quantity=mx, unit_price=pr))
+            session.add(BulkSale(
+                product_id=gloves.id,
+                min_order_quantity=50,
+                max_order_quantity=None,
+                bulk_discount_percent=5,
+                is_active=True,
+            ))
+            print("Industrial Gloves product with bulk tiers seeded.")
+        
+        # Second published product + a service
+        result = await session.execute(
+            select(Product).where(Product.vendor_id == mvp_vendor.id, Product.name == "Safety Helmets")
+        )
+        if not result.scalar_one_or_none():
+            session.add(Product(
+                vendor_id=mvp_vendor.id,
+                name="Safety Helmets",
+                sku="HLM-002",
+                description="ISI-marked industrial safety helmets.",
+                category="Safety Equipment",
+                price=350,
+                stock=2000,
+                unit="piece",
+                moq=10,
+                status=ListingStatus.PUBLISHED,
+            ))
+            print("Safety Helmets product seeded.")
+        
+        result = await session.execute(
+            select(VendorService).where(VendorService.vendor_id == mvp_vendor.id, VendorService.name == "Equipment Installation")
+        )
+        if not result.scalar_one_or_none():
+            session.add(VendorService(
+                vendor_id=mvp_vendor.id,
+                name="Equipment Installation",
+                description="On-site installation and commissioning of industrial equipment.",
+                category="Installation",
+                base_price=15000,
+                pricing_unit="day",
+                min_quantity=1,
+                service_area=["Mumbai", "Pune"],
+                availability="available",
+                delivery_time="1-2 weeks scheduling",
+                status=ListingStatus.PUBLISHED,
+            ))
+            print("Equipment Installation service seeded.")
+        
+        await session.commit()
+        print("Vendor marketplace seed complete.")
         
         print("\n=== Seed data complete ===")
         print("Login with: demo@bidsense.io / Demo@1234")

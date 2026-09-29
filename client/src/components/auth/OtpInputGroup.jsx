@@ -39,7 +39,7 @@ const OtpInputGroup = ({ otp, setOtp }) => {
                     value={digit}
                     onChange={(e) => handleChange(e, index)}
                     onKeyDown={(e) => handleKeyDown(e, index)}
-                    className="w-12 h-14 md:w-14 md:h-16 text-center text-2xl font-bold text-indigo-600 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
+                    className="w-12 h-14 md:w-14 md:h-16 text-center text-2xl font-bold text-indigo-600 dark:text-indigo-400 bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
                 />
             ))}
         </div>

@@ -132,27 +132,36 @@ BidSense/
 
 ### Prerequisites
 
-- Python 3.11+
-- Node.js 18+ and npm
-- PostgreSQL 14+
+- Python 3.13+
+- Bun 1.4+
+- Docker and Docker Compose
 - Redis (used for OTP flows)
 - Optional: an OpenAI-compatible API key for live AI features
 
-### 1. Backend
+### 1. Local database
+
+```bash
+docker compose up -d local-database
+docker compose ps local-database
+```
+
+The database is PostgreSQL 16, exposed at `localhost:5432`, and persists in the
+`bidsense_local_database_data` Docker volume. The old `bidsense-postgres`
+container and its data volume are not used.
+
+### 2. Backend
 
 ```bash
 cd server
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+uv sync --locked
 ```
 
-Create `server/.env` (see [Configuration](#configuration)); `DATABASE_URL` is the only required variable.
+Create `server/.env` from `.env.example` (see [Configuration](#configuration)).
+Initialize the schema and seed demo data without dropping existing tables or rows:
 
-Create the tables and seed demo data:
 
 ```bash
-python -m app.db.init_db
+uv run python -m app.db.init_db
 ```
 
 This seeds a verified demo user (`demo@bidsense.io` / `Demo@1234`), five vendors, four RFPs, proposals and activity rows.
@@ -160,19 +169,19 @@ This seeds a verified demo user (`demo@bidsense.io` / `Demo@1234`), five vendors
 Run the API:
 
 ```bash
-uvicorn app.main:app --reload --port 8000
+uv run uvicorn app.main:app --reload --port 8000
 ```
 
 - API root: `http://localhost:8000/api`
 - Swagger UI: `http://localhost:8000/api/docs`
 - Health check: `http://localhost:8000/health`
 
-### 2. Frontend
+### 3. Frontend
 
 ```bash
 cd client
-npm install
-npm run dev        # http://localhost:5173
+bun install --frozen-lockfile
+bun run dev        # http://localhost:5173
 ```
 
 Create `client/.env`:
@@ -181,9 +190,9 @@ Create `client/.env`:
 VITE_API_URL=http://localhost:8000/api
 ```
 
-Set this explicitly — `client/src/api/axios.js` falls back to `http://localhost:5000/api`, which does not match the backend's default port.
+The client is configured to call the backend at `http://localhost:8000/api`.
 
-Other client scripts: `npm run build`, `npm run preview`, `npm run lint`.
+Other client scripts: `bun run build`, `bun run preview`, `bun run lint`.
 
 ---
 

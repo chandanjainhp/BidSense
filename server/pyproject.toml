@@ -1,0 +1,42 @@
+[project]
+name = "server"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "chandanjainhp", email = "chandanjaincj93@gmail.com" }
+]
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "aiosmtplib==3.0.2",
+    "alembic==1.14.0",
+    "asyncpg==0.30.0",
+    "email-validator==2.2.0",
+    "fastapi==0.115.6",
+    "httpx==0.28.1",
+    "openai==1.58.1",
+    "passlib[bcrypt]==1.7.4",
+    "pgvector==0.3.6",
+    "pdfminer.six==20250324",
+    "python-docx==1.1.2",
+    "pydantic==2.10.4",
+    "pydantic-settings==2.7.0",
+    "pytest==8.3.4",
+    "pytest-asyncio==0.24.0",
+    "python-jose[cryptography]==3.3.0",
+    "python-multipart==0.0.19",
+    "redis==5.2.1",
+    "sqlalchemy[asyncio]==2.0.36",
+    "uuid7==0.1.0",
+    "uvicorn[standard]==0.34.0",
+]
+
+[project.scripts]
+server = "server:main"
+
+[build-system]
+requires = ["uv_build>=0.12.13,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

@@ -36,6 +36,23 @@ import GuidesPage from './pages/GuidesPage';
 import SupportPage from './pages/SupportPage';
 import ApiReferencePage from './pages/ApiReferencePage';
 
+// Vendor marketplace feature
+import VendorLayout from './features/vendor/components/VendorLayout';
+import VendorRoute from './features/vendor/components/VendorRoute';
+import VendorRegistration from './features/vendor/pages/VendorRegistration';
+import VendorDashboard from './features/vendor/pages/VendorDashboard';
+import VendorProfilePage from './features/vendor/pages/VendorProfile';
+import VendorProducts from './features/vendor/pages/VendorProducts';
+import ProductForm from './features/vendor/pages/ProductForm';
+import VendorServices from './features/vendor/pages/VendorServices';
+import ServiceForm from './features/vendor/pages/ServiceForm';
+import BulkSales from './features/vendor/pages/BulkSales';
+import VendorInquiries from './features/vendor/pages/VendorInquiries';
+import VendorQuotations from './features/vendor/pages/VendorQuotations';
+import VendorOrders from './features/vendor/pages/VendorOrders';
+import MarketplacePage from './features/vendor/pages/MarketplacePage';
+import VendorStorePage from './features/vendor/pages/VendorStorePage';
+
 // Inner component to handle routing logic that depends on useLocation
 const AppContent = () => {
   const location = useLocation();
@@ -48,6 +65,9 @@ const AppContent = () => {
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/otp-verification" element={<OtpVerification />} />
+
+        {/* Vendor Registration (no vendor guard — this is how you become one) */}
+        <Route path="/vendor/register" element={<VendorRegistration />} />
 
         {/* Main Application Routes (Wrapped in Layout) */}
         <Route element={<Layout />}>
@@ -66,6 +86,26 @@ const AppContent = () => {
           <Route path="/notifications" element={<NotificationCenter />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
+
+        {/* Vendor Studio (protected — requires a vendor profile) */}
+        <Route element={<VendorRoute><VendorLayout /></VendorRoute>}>
+          <Route path="/vendor/dashboard" element={<VendorDashboard />} />
+          <Route path="/vendor/profile" element={<VendorProfilePage />} />
+          <Route path="/vendor/products" element={<VendorProducts />} />
+          <Route path="/vendor/products/new" element={<ProductForm mode="create" />} />
+          <Route path="/vendor/products/:id/edit" element={<ProductForm mode="edit" />} />
+          <Route path="/vendor/services" element={<VendorServices />} />
+          <Route path="/vendor/services/new" element={<ServiceForm mode="create" />} />
+          <Route path="/vendor/services/:id/edit" element={<ServiceForm mode="edit" />} />
+          <Route path="/vendor/bulk-sales" element={<BulkSales />} />
+          <Route path="/vendor/inquiries" element={<VendorInquiries />} />
+          <Route path="/vendor/quotations" element={<VendorQuotations />} />
+          <Route path="/vendor/orders" element={<VendorOrders />} />
+        </Route>
+
+        {/* Public marketplace (no auth) */}
+        <Route path="/marketplace" element={<MarketplacePage />} />
+        <Route path="/marketplace/:vendorId" element={<VendorStorePage />} />
 
         {/* Public Routes (No Layout) */}
         <Route path="/" element={<LandingPage />} />

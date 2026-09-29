@@ -1,0 +1,12 @@
+
+  ROLLDOWN-VITE v7.2.5  ready in 296 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: http://192.168.29.129:5173/
+  ➜  Network: http://100.81.131.41:5173/
+  ➜  Network: http://172.23.0.1:5173/
+  ➜  Network: http://172.24.0.1:5173/
+10:35:14 AM [vite] (client) hmr update /src/index.css, /src/components/layout/Sidebar.jsx
+10:35:14 AM [vite] (client) hmr update /src/index.css, /src/components/layout/Sidebar.jsx
+10:36:31 AM [vite] (client) hmr update /src/index.css, /src/components/layout/Sidebar.jsx
+10:36:49 AM [vite] (client) hmr update /src/index.css, /src/components/layout/Sidebar.jsx

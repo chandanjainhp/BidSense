@@ -11,7 +11,7 @@ import PageTransition from '../components/common/PageTransition';
 
 const PricingPage = () => {
     return (
-        <PageTransition className="min-h-screen font-sans bg-white selection:bg-indigo-500 selection:text-white">
+        <PageTransition className="min-h-screen font-sans bg-white dark:bg-black selection:bg-indigo-500 selection:text-white">
             <SEO
                 title="Pricing Plans"
                 description="Flexible pricing for procurement teams of all sizes. Start your free trial today."

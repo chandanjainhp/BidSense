@@ -59,11 +59,11 @@ const OtpVerification = () => {
   const isFormValid = !otp.some(v => v === "");
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 font-sans">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-6 font-sans">
       <div className="w-full max-w-md">
 
         {/* --- Card Container --- */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 md:p-10 text-center">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-8 md:p-10 text-center">
 
           <OtpHeader email={email} />
 

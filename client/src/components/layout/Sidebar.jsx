@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useTheme } from '../../context/ThemeContext';
 import settingsService from '../../services/settingsService';
 import logo from '../../assets/logo-round.jpg';
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isCollapsed, setIsCollapsed }) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { theme, toggleTheme } = useTheme();
     const [user, setUser] = useState(null);
 
     const navItems = [
@@ -17,6 +15,8 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isCollapsed, setIsCollapsed 
         { name: 'Proposals', path: '/proposals', icon: 'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4' },
         { name: 'BidSense AI', path: '/chat', icon: 'M13 10V3L4 14h7v7l9-11h-7z', special: true },
         { name: 'History', path: '/rfps/history', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
+        { name: 'Marketplace', path: '/marketplace', icon: 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z' },
+        { name: 'Vendor Studio', path: '/vendor/dashboard', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
     ];
 
     const getActiveState = (path) => {
@@ -36,7 +36,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isCollapsed, setIsCollapsed 
     return (
         <aside
             className={`
-        fixed inset-y-0 left-0 z-50 bg-gray-900 dark:bg-black transition-all duration-300 ease-in-out lg:relative lg:translate-x-0
+        fixed inset-y-0 left-0 z-50 bg-gray-50 dark:bg-black border-r border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out lg:relative lg:translate-x-0
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         ${isCollapsed ? 'lg:w-20' : 'lg:w-64'}
         w-64
@@ -45,7 +45,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isCollapsed, setIsCollapsed 
             <div className="flex flex-col h-full">
                 {/* Branding & Collapse Toggle */}
 
-                <div className={`flex items-center h-16 px-6 bg-gray-950/50 dark:bg-gray-900/50 justify-between`}>
+                <div className={`flex items-center h-16 px-6 bg-white/60 dark:bg-gray-900/50 justify-between border-b border-gray-200/60 dark:border-transparent`}>
                     <div className={`flex items-center ${isCollapsed ? 'justify-center w-full' : ''}`}>
                         {/* Logo Image */}
                         <img
@@ -77,11 +77,11 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isCollapsed, setIsCollapsed 
                             }}
                             className={`w-full flex items-center p-3 rounded-xl text-sm font-bold transition-all duration-200 group relative ${getActiveState(item.path)
                                 ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50'
-                                : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white'
                                 }`}
                             title={isCollapsed ? item.name : ''}
                         >
-                            <svg className={`w-6 h-6 flex-shrink-0 transition-all ${isCollapsed ? 'mx-auto' : 'mr-3'} ${getActiveState(item.path) ? 'text-white' : 'text-gray-500 group-hover:text-indigo-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className={`w-6 h-6 flex-shrink-0 transition-all ${isCollapsed ? 'mx-auto' : 'mr-3'} ${getActiveState(item.path) ? 'text-white' : 'text-gray-400 group-hover:text-indigo-500 dark:text-gray-500 dark:group-hover:text-indigo-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon} />
                             </svg>
 
@@ -99,32 +99,16 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isCollapsed, setIsCollapsed 
                 </nav>
 
                 {/* Theme Toggle & User Profile */}
-                <div className="p-4 bg-gray-950/30 border-t border-white/5 space-y-3">
-                    {/* Theme Toggle Button */}
-                    <button
-                        onClick={toggleTheme}
-                        className={`w-full flex items-center justify-center p-2.5 rounded-xl transition-all duration-200 ${theme === 'dark'
-                            ? 'bg-gray-800 text-yellow-400 border border-gray-700'
-                            : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'
-                            } ${isCollapsed ? 'px-0' : 'px-4 space-x-3'}`}
-                        title="Toggle Theme"
-                    >
-                        {theme === 'dark' ? (
-                            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                        ) : (
-                            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-                        )}
-                        {!isCollapsed && <span className="text-sm font-bold">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>}
-                    </button>
+                <div className="p-4 bg-white/40 dark:bg-gray-950/30 border-t border-gray-200 dark:border-white/5">
                     <div
                         onClick={() => navigate('/settings')}
-                        className={`flex items-center p-2 rounded-xl hover:bg-white/5 transition-all cursor-pointer ${isCollapsed ? 'justify-center' : ''}`}
+                        className={`flex items-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-all cursor-pointer ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                        <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 border-2 border-white/10" />
+                        <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 border-2 border-gray-200 dark:border-white/10" />
                         {!isCollapsed && (
                             <div className="ml-3 overflow-hidden text-left animate-in fade-in duration-300">
-                                <p className="text-sm font-bold text-white truncate">{user?.full_name || 'My Account'}</p>
-                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{user?.is_verified ? 'Verified' : 'Member'}</p>
+                                <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user?.full_name || 'My Account'}</p>
+                                <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">{user?.is_verified ? 'Verified' : 'Member'}</p>
                             </div>
                         )}
                     </div>

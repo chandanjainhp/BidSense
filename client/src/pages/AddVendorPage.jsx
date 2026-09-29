@@ -31,7 +31,7 @@ const AddVendorPage = () => {
     };
 
     return (
-        <div className="min-h-[calc(100vh-4rem)] bg-gray-50/50 p-6 md:p-10 font-sans flex justify-center">
+        <div className="min-h-[calc(100vh-4rem)] bg-gray-50/50 dark:bg-black p-6 md:p-10 font-sans flex justify-center">
 
             <div className="w-full max-w-3xl">
                 {/* Header */}

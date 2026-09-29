@@ -72,14 +72,14 @@ class ResetPasswordRequest(BaseSchema):
 
 
 class UserPublic(BaseSchema):
-    id: str
+    id: UUID
     full_name: str
     email: str
     is_verified: bool
     avatar_url: str | None = None
-    created_at: str
-    updated_at: str
-    last_login_at: str | None = None
+    created_at: datetime
+    updated_at: datetime
+    last_login_at: datetime | None = None
     
     @field_serializer('id')
     def serialize_id(self, value: UUID) -> str:

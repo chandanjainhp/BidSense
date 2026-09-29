@@ -15,7 +15,8 @@ const ProcurementFlowSection = () => {
             stepNumber: "01",
             animationType: "fade-up",
             visual: (
-                <div className="w-full max-w-[240px] bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 transform transition-transform group-hover:scale-105 duration-500">
+                <div className="flex w-full max-w-[240px] justify-center">
+                <div className="w-full bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 transform transition-transform group-hover:scale-105 duration-500">
                     <div className="h-2 w-1/3 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
                     <div className="space-y-2">
                         <div className="h-8 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700"></div>
@@ -28,6 +29,7 @@ const ProcurementFlowSection = () => {
                         <div className="w-1 h-1 rounded-full bg-green-500"></div>
                         <span className="text-[8px] text-gray-400 font-bold uppercase">SSO Secured</span>
                     </div>
+                </div>
                 </div>
             )
         },
@@ -66,7 +68,7 @@ const ProcurementFlowSection = () => {
                     {[1, 2, 3].map((i) => (
                         <div key={i} className="w-16 h-16 rounded-full border-4 border-white dark:border-gray-800 bg-gray-100 dark:bg-gray-700 shadow-md flex items-center justify-center relative group-hover:-translate-y-2 transition-transform duration-300" style={{ transitionDelay: `${i * 100}ms` }}>
                             <img
-                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 10}&backgroundColor=b6e3f4`}
+                                src={`https://api.dicebear.com/9.x/initials/svg?seed=${i + 10}&backgroundColor=6366f1&fontColor=ffffff&fontWeight=600`}
                                 alt="avatar"
                                 className="w-full h-full rounded-full"
                             />
@@ -89,7 +91,8 @@ const ProcurementFlowSection = () => {
             stepNumber: "04",
             animationType: "scale-in",
             visual: (
-                <div className="w-full max-w-[240px] space-y-3">
+                <div className="w-full max-w-[240px]">
+                <div className="space-y-3">
                     <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">BidSense Score</span>
                         <span className="text-xl font-black text-gray-900 dark:text-white">92<span className="text-sm text-gray-400">/100</span></span>
@@ -114,6 +117,7 @@ const ProcurementFlowSection = () => {
                         </span>
                     </div>
                 </div>
+                </div>
             )
         },
         {
@@ -122,7 +126,8 @@ const ProcurementFlowSection = () => {
             stepNumber: "05",
             animationType: "progress",
             visual: (
-                <div className="w-full max-w-[220px] bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+                <div className="flex w-full max-w-[220px] justify-center">
+                <div className="w-full bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
                     <div className="flex flex-col gap-3">
                         {[1, 2, 3].map((i) => (
                             <div key={i} className="flex items-center gap-3">
@@ -139,6 +144,7 @@ const ProcurementFlowSection = () => {
                         <span className="text-[10px] font-bold text-gray-400">Audit Log</span>
                         <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     </div>
+                </div>
                 </div>
             )
         }

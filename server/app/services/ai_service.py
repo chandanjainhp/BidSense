@@ -24,9 +24,14 @@ class AIService:
 
         system_prompt = "You are BidSense AI, a helpful assistant for procurement and RFP management."
         if context:
-            rfp_context = context.get("rfp_titles", [])
-            if rfp_context:
-                system_prompt += f"\n\nUser's active RFPs: {', '.join(rfp_context)}"
+            # RAG callers pass a fully-built system prompt; plain chat passes RFP titles
+            custom_prompt = context.get("system_prompt")
+            if custom_prompt:
+                system_prompt = custom_prompt
+            else:
+                rfp_context = context.get("rfp_titles", [])
+                if rfp_context:
+                    system_prompt += f"\n\nUser's active RFPs: {', '.join(rfp_context)}"
 
         api_messages = [{"role": "system", "content": system_prompt}] + messages
 

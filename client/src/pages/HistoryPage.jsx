@@ -5,10 +5,10 @@ import HistoryTimeline from '../components/rfp/HistoryTimeline';
 import rfpService from '../services/rfpService';
 
 const TYPE_COLORS = {
-  user: 'bg-indigo-100 text-indigo-600',
-  ai: 'bg-cyan-100 text-cyan-600',
-  vendor: 'bg-amber-100 text-amber-600',
-  system: 'bg-gray-100 text-gray-600',
+  user: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300',
+  ai: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-500/15 dark:text-cyan-300',
+  vendor: 'bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300',
+  system: 'bg-gray-100 text-gray-600 dark:bg-gray-500/15 dark:text-gray-300',
 };
 
 const HistoryPage = () => {
